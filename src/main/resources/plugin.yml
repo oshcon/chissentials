@@ -1,0 +1,5 @@
+name: ${name}
+author: plushmonkey
+version: ${version}
+main: com.plushnode.chissentials.ChissentialsPlugin
+depend: [ProjectKorra]

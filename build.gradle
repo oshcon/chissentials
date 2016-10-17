@@ -1,0 +1,54 @@
+apply plugin: 'idea'
+apply plugin: 'java'
+
+version = '1.0'
+
+compileJava {
+	sourceCompatibility = '1.8'
+}
+
+repositories {
+	mavenCentral()
+	flatDir {
+		dirs 'libs'
+	}
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs = ['src/main/java']
+		}
+	}
+}
+
+processResources {
+	filter {
+		line ->
+		line
+		.replace('${name}', project.name.capitalize())
+		.replace('${version}', project.version)
+	}
+}
+
+jar {
+	manifest {
+		attributes 'Implementation-Title': project.name.capitalize(),
+		           'Implementation-Version': project.version
+	}
+	from {
+		(configurations.runtime - configurations.provided).collect { it.isDirectory() ? it : zipTree(it) }
+	}
+}
+
+configurations {
+	provided
+	compile.extendsFrom provided
+}
+
+dependencies {
+	provided name: 'spigot-api-1.10-R0.1-SNAPSHOT'
+	provided name: 'ProjectKorra-1.8.0'
+}
+
+buildDir = 'bin'
