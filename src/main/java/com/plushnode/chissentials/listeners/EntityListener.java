@@ -4,6 +4,7 @@ import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.abilities.chi.FlyingKick;
 import com.plushnode.chissentials.abilities.chi.KickPunch;
 import com.plushnode.chissentials.abilities.chi.LegSweep;
+import com.plushnode.chissentials.ability.SwingDamageAbility;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import org.bukkit.entity.Player;
@@ -59,6 +60,12 @@ public class EntityListener implements Listener {
             new FlyingKick(damager);
         } else if (boundAbility.getClass().equals(LegSweep.class)) {
             new LegSweep(damager);
+        }
+
+        if (boundAbility instanceof SwingDamageAbility) {
+            double newDamage = ((SwingDamageAbility) boundAbility).getSwingDamage();
+
+            event.setDamage(newDamage);
         }
     }
 }

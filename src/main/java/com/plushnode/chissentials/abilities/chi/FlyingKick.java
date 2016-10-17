@@ -11,11 +11,14 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.util.Vector;
+
+import java.util.Collection;
 
 public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     private enum State { Movement, GroundWait, ExplosionStart, ExplosionMid, ExplosionEnd }
@@ -27,6 +30,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     private static final double ExplosionRadius = 3.5;
     // Maximum amount of time to wait for player to hit ground after stopping movement early
     private static final long PlayerGroundWaitTime = 1000;
+    private static double damage = 20.0;
 
     private ArmorStand vehicle;
     private Vector direction;
@@ -90,6 +94,15 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
                 this.explosionLocation = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().clone();
 
                 renderExplosion(ExplosionRadius * 0.3, 0);
+
+                Collection<Entity> nearbyEntities = player.getWorld().getNearbyEntities(player.getLocation(), ExplosionRadius + 1, 6, ExplosionRadius + 1);
+                for (Entity entity : nearbyEntities) {
+                    if (!(entity instanceof LivingEntity)) continue;
+
+                    if (entity.getLocation().distanceSquared(this.explosionLocation) <= ExplosionRadius * ExplosionRadius) {
+                        ((LivingEntity) entity).damage(damage);
+                    }
+                }
             }
             break;
             case ExplosionMid:

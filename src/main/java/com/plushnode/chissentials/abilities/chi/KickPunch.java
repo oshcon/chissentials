@@ -1,6 +1,7 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
+import com.plushnode.chissentials.ability.SwingDamageAbility;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.util.ActionBar;
@@ -9,9 +10,11 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-public class KickPunch extends ChiAbility implements AddonAbility {
+public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAbility {
     private static final long Duration = 150;
     private ArmorStand vehicle;
+    private static double damage = 10.0;
+    private boolean isSprinting;
 
     public KickPunch(Player player) {
         super(player);
@@ -26,6 +29,8 @@ public class KickPunch extends ChiAbility implements AddonAbility {
         vehicle.setMarker(true);
         vehicle.setPassenger(player);
 
+        this.isSprinting = player.isSprinting();
+
         this.start();
     }
 
@@ -37,8 +42,13 @@ public class KickPunch extends ChiAbility implements AddonAbility {
             if (passenger != null)
                 passenger.leaveVehicle();
             vehicle.remove();
+            player.setSprinting(isSprinting);
             remove();
         }
+    }
+
+    public double getSwingDamage() {
+        return damage;
     }
 
     @Override
