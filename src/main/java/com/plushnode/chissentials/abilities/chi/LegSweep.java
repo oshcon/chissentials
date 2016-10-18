@@ -45,26 +45,26 @@ public class LegSweep extends ChiAbility implements AddonAbility {
                 Location current = getAngleLocation(angle, Radius * range).add(0, (phi + 1) / 8, 0);
 
                 ParticleEffect.CLOUD.display(0.0f, 0.0f, 0.0f, 0.0f, 3, current, ChissentialsPlugin.PARTICLE_RANGE);
+            }
 
-                Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), Radius, 1.5, Radius);
+            Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), Radius, 1.5, Radius);
 
-                for (Entity entity : entities) {
-                    if (entity == player) continue;
-                    if (!(entity instanceof LivingEntity)) continue;
+            for (Entity entity : entities) {
+                if (entity == player) continue;
+                if (!(entity instanceof LivingEntity)) continue;
 
-                    Vector entityPos = entity.getLocation().toVector().setY(0);
-                    Vector playerPos = player.getLocation().toVector().setY(0);
+                Vector entityPos = entity.getLocation().toVector().setY(0);
+                Vector playerPos = player.getLocation().toVector().setY(0);
 
-                    if (entityPos.distanceSquared(playerPos) > Radius * Radius) continue;
+                if (entityPos.distanceSquared(playerPos) > Radius * Radius) continue;
 
-                    Vector toEntity = entityPos.subtract(playerPos);
-                    double entityAngle = Math.atan2(toEntity.getZ(), toEntity.getX());
-                    entityAngle = normalizeAngle(entityAngle);
+                Vector toEntity = entityPos.subtract(playerPos);
+                double entityAngle = Math.atan2(toEntity.getZ(), toEntity.getX());
+                entityAngle = normalizeAngle(entityAngle);
 
-                    if ((entityAngle >= angle) && (entityAngle <= angle + (Math.PI * 2) / UpdateCount)) {
-                        // todo: stun here instead of damage
-                        ((LivingEntity)entity).damage(30);
-                    }
+                if ((entityAngle >= angle) && (entityAngle <= angle + (Math.PI * 2) / UpdateCount)) {
+                    // todo: stun here instead of damage
+                    ((LivingEntity)entity).damage(30);
                 }
             }
 
