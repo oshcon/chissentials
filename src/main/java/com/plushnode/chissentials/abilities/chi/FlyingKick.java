@@ -95,8 +95,9 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
                 renderExplosion(ExplosionRadius * 0.3, 0);
 
-                Collection<Entity> nearbyEntities = player.getWorld().getNearbyEntities(player.getLocation(), ExplosionRadius + 1, 6, ExplosionRadius + 1);
+                Collection<Entity> nearbyEntities = player.getWorld().getNearbyEntities(player.getLocation(), ExplosionRadius + 1, 1.5, ExplosionRadius + 1);
                 for (Entity entity : nearbyEntities) {
+                    if (entity == player) continue;
                     if (!(entity instanceof LivingEntity)) continue;
 
                     if (entity.getLocation().distanceSquared(this.explosionLocation) <= ExplosionRadius * ExplosionRadius) {
