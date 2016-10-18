@@ -1,6 +1,7 @@
 package com.plushnode.chissentials;
 
 import com.plushnode.chissentials.listeners.EntityListener;
+import com.plushnode.chissentials.listeners.StunListener;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -25,6 +26,9 @@ public class ChissentialsPlugin extends JavaPlugin {
         CoreAbility.registerPluginAbilities(this, "com.plushnode.chissentials.abilities");
 
         this.getServer().getPluginManager().registerEvents(new EntityListener(this), this);
+        this.getServer().getPluginManager().registerEvents(new StunListener(), this);
+
+        StunManager.get().runTaskTimer(this, 0L, 5L);
     }
 
     @Override

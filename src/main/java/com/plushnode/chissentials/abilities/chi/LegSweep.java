@@ -1,6 +1,8 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
+import com.plushnode.chissentials.StunManager;
+import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.util.ParticleEffect;
@@ -19,6 +21,7 @@ public class LegSweep extends ChiAbility implements AddonAbility {
     private static final int UpdateCount = 12;
     private static final long UpdateDelay = SweepDuration / UpdateCount;
 
+    private long stunDuration = 6000;
     private double theta = 0;
     private double yaw;
     private long lastUpdate = 0;
@@ -27,6 +30,11 @@ public class LegSweep extends ChiAbility implements AddonAbility {
         super(player);
 
         yaw = Math.toRadians(player.getLocation().getYaw());
+
+        BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+        if (bPlayer == null) return;
+
+        bPlayer.addCooldown(this);
 
         this.start();
     }
@@ -63,8 +71,7 @@ public class LegSweep extends ChiAbility implements AddonAbility {
                 entityAngle = normalizeAngle(entityAngle);
 
                 if ((entityAngle >= angle) && (entityAngle <= angle + (Math.PI * 2) / UpdateCount)) {
-                    // todo: stun here instead of damage
-                    ((LivingEntity)entity).damage(30);
+                    StunManager.get().stun(entity, stunDuration);
                 }
             }
 

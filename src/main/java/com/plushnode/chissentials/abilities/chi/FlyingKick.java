@@ -14,6 +14,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.util.Vector;
@@ -25,7 +26,8 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     private static final long ExplosionTransitionDelay = 100;
     private static final int ExplosionParticleCount = 24;
-    private static final double speed = 1.0; // Blocks per second
+    // Blocks per second
+    private static final double speed = 20.0;
     private static final long duration = 2000;
     private static final double ExplosionRadius = 3.5;
     // Maximum amount of time to wait for player to hit ground after stopping movement early
@@ -43,15 +45,14 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     public FlyingKick(Player player) {
         super(player);
 
-        BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+        if (!getAbilities(player, FlyingKick.class).isEmpty()) {
+            return;
+        }
 
-        stateStart = this.startTime;
+        BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
         bPlayer.addCooldown(this);
 
         Location vehicleLocation = player.getLocation().clone();
-        this.direction = player.getLocation().getDirection().clone().setY(0).normalize();
-        this.startY = player.getLocation().getBlockY();
-
         vehicle = player.getWorld().spawn(vehicleLocation, ArmorStand.class);
         vehicle.setBasePlate(false);
         vehicle.setVisible(false);
@@ -60,14 +61,19 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         vehicle.setMarker(true);
         vehicle.setPassenger(player);
 
+        this.direction = player.getLocation().getDirection().clone().setY(0).normalize();
+        this.startY = player.getLocation().getBlockY();
+        this.stateStart = this.startTime;
 
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
         this.start();
     }
 
-    @EventHandler
+
+    @EventHandler(priority = EventPriority.LOW)
     public void onPlayerSwing(PlayerAnimationEvent event) {
-        if (event.getPlayer() == this.player) {
+        if (event.getPlayer() == this.player && state == State.Movement) {
+            event.setCancelled(true);
             destroyVehicle();
             transitionState(State.GroundWait);
         }
@@ -170,7 +176,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     }
 
     private void moveVehicle() {
-        Vector delta = this.direction.clone().multiply(speed);
+        Vector delta = this.direction.clone().multiply(speed / 20.0);
 
         vehicle.setVelocity(delta);
         ActionBar.sendActionBar("", player);
@@ -236,7 +242,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public long getCooldown() {
-        return 4000;
+        return 0;
     }
 
     @Override

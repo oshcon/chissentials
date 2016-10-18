@@ -2,6 +2,7 @@ package com.plushnode.chissentials.listeners;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.abilities.chi.FlyingKick;
+import com.plushnode.chissentials.abilities.chi.Karma;
 import com.plushnode.chissentials.abilities.chi.KickPunch;
 import com.plushnode.chissentials.abilities.chi.LegSweep;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
@@ -12,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 public class EntityListener implements Listener {
     private ChissentialsPlugin plugin;
@@ -36,6 +38,24 @@ public class EntityListener implements Listener {
             new FlyingKick(event.getPlayer());
         } else if (boundAbility.getClass().equals(LegSweep.class)) {
             new LegSweep(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
+        if (!event.isSneaking()) return;
+        if (event.isCancelled()) return;
+
+        BendingPlayer bendingPlayer = BendingPlayer.getBendingPlayer(event.getPlayer());
+        if (bendingPlayer == null) return;
+
+        CoreAbility boundAbility = bendingPlayer.getBoundAbility();
+        if (boundAbility == null) return;
+
+        if (!bendingPlayer.canBend(boundAbility)) return;
+
+        if (boundAbility.getClass().equals(Karma.class)) {
+            new Karma(event.getPlayer());
         }
     }
 

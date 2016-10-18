@@ -2,6 +2,7 @@ package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
+import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.util.ActionBar;
@@ -18,6 +19,11 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
 
     public KickPunch(Player player) {
         super(player);
+
+        BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+        if (bPlayer == null) return;
+
+        bPlayer.addCooldown(this);
 
         Location vehicleLocation = player.getLocation().clone().add(0, 0.5, 0);
 
