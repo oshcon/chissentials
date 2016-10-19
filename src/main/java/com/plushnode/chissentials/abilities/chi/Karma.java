@@ -5,6 +5,7 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
+import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -20,11 +21,13 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
     private double range = 30.0;
     private double duration = 6000;
     private LivingEntity target;
+    private long displayDelay = 200;
+    private long lastDisplay = 0;
 
     public Karma(Player player) {
         super(player);
 
-        this.target = getTargetedEntity(range, 3.0);
+        this.target = getTargetedEntity(range, 1.5);
 
         if (this.target == null) {
             System.out.println("No target for karma");
@@ -53,6 +56,16 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
     @Override
     public void progress() {
         long time = System.currentTimeMillis();
+
+        if (time >= lastDisplay + displayDelay) {
+            Location playerLoc = player.getLocation().clone().add(0, 2.5, 0);
+            Location targetLoc = target.getLocation().clone().add(0, 2.5, 0);
+
+            ParticleEffect.SMOKE.display(0.1f, 0.0f, 0.1f, 0.0f, 3, targetLoc, ChissentialsPlugin.PARTICLE_RANGE);
+            ParticleEffect.SPELL.display(0.1f, 0.0f, 0.1f, 0.0f, 3, playerLoc, ChissentialsPlugin.PARTICLE_RANGE);
+
+            lastDisplay = time;
+        }
 
         if (time >= this.startTime + duration) {
             remove();

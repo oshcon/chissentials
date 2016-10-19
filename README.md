@@ -15,3 +15,6 @@ Fly through the air in a locked direction. Damage nearby enemies at the end.
 Stun targets if they collide with the front of the sweep.  
 ![example](https://thumbs.gfycat.com/SelfishIdealisticKrill-size_restricted.gif "LegSweep")
 
+## Karma
+Redirect all damage taken to a target for a short period of time.  
+![example](https://thumbs.gfycat.com/MiniatureHiddenFunnelweaverspider-size_restricted.gif "Karma")
