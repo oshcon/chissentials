@@ -1,6 +1,7 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
+import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
@@ -18,10 +19,18 @@ import org.bukkit.util.Vector;
 import java.util.Collection;
 
 public class Karma extends ChiAbility implements AddonAbility, Listener {
-    private double range = 30.0;
-    private double duration = 6000;
+    private static final double DEFAULT_RANGE = 30.0;
+    private static final long DEFAULT_DURATION = 6000;
+    private static final long DEFAULT_COOLDOWN = 40000;
+
+    private static final long DisplayDelay = 200;
+
+    private static boolean enabled = true;
+    private static long cooldown = DEFAULT_COOLDOWN;
+    private static double range = DEFAULT_RANGE;
+    private static double duration = DEFAULT_DURATION;
+
     private LivingEntity target;
-    private long displayDelay = 200;
     private long lastDisplay = 0;
 
     public Karma(Player player) {
@@ -29,10 +38,7 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
 
         this.target = getTargetedEntity(range, 1.5);
 
-        if (this.target == null) {
-            System.out.println("No target for karma");
-            return;
-        }
+        if (this.target == null) return;
 
         BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
         if (bPlayer == null) return;
@@ -57,7 +63,7 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
     public void progress() {
         long time = System.currentTimeMillis();
 
-        if (time >= lastDisplay + displayDelay) {
+        if (time >= lastDisplay + DisplayDelay) {
             Location playerLoc = player.getLocation().clone().add(0, 2.5, 0);
             Location targetLoc = target.getLocation().clone().add(0, 2.5, 0);
 
@@ -104,9 +110,13 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public void remove() {
-        System.out.println("Removing karma");
         EntityDamageEvent.getHandlerList().unregister(this);
         super.remove();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 
     @Override
@@ -121,7 +131,7 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public long getCooldown() {
-        return 0;
+        return cooldown;
     }
 
     @Override
@@ -152,5 +162,21 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
     @Override
     public String getVersion() {
         return ChissentialsPlugin.version;
+    }
+
+    public static class Config extends Configurable {
+        public Config(ChissentialsPlugin plugin) {
+            super(plugin);
+
+            onConfigReload();
+        }
+
+        @Override
+        public void onConfigReload() {
+            enabled = this.config.getBoolean("Chi.Karma.Enabled", true);
+            cooldown = this.config.getLong("Chi.Karma.Cooldown", DEFAULT_COOLDOWN);
+            range = this.config.getDouble("Chi.Karma.Range", DEFAULT_RANGE);
+            duration = this.config.getLong("Chi.Karma.Duration", DEFAULT_DURATION);
+        }
     }
 }

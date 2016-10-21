@@ -2,6 +2,7 @@ package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.StunManager;
+import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
@@ -15,13 +16,19 @@ import org.bukkit.util.Vector;
 import java.util.Collection;
 
 public class LegSweep extends ChiAbility implements AddonAbility {
-    private static final long SweepDuration = 500;
-    private static final double Radius = 3.0;
-
+    private static final long DEFAULT_COOLDOWN = 12000;
+    private static final long DEFAULT_STUN_DURATION = 1000;
+    private static final long DEFAULT_SWEEP_DURATION = 500;
+    private static final double DEFAULT_SWEEP_RADIUS = 3.0;
     private static final int UpdateCount = 12;
-    private static final long UpdateDelay = SweepDuration / UpdateCount;
 
-    private long stunDuration = 6000;
+    private static boolean enabled = true;
+    private static long cooldown = DEFAULT_COOLDOWN;
+    private static long stunDuration = DEFAULT_STUN_DURATION;
+    private static long sweepDuration = DEFAULT_SWEEP_DURATION;
+    private static double radius = DEFAULT_SWEEP_RADIUS;
+    private static long updateDelay = sweepDuration / UpdateCount;
+
     private double theta = 0;
     private double yaw;
     private long lastUpdate = 0;
@@ -43,19 +50,19 @@ public class LegSweep extends ChiAbility implements AddonAbility {
     public void progress() {
         long time = System.currentTimeMillis();
 
-        if (time >= lastUpdate + UpdateDelay) {
+        if (time >= lastUpdate + updateDelay) {
             double angle = theta + yaw;
             double phi = Math.sin(angle);
 
             angle = normalizeAngle(angle);
 
             for (double range = 0; range < 1; range += 0.3) {
-                Location current = getAngleLocation(angle, Radius * range).add(0, (phi + 1) / 8, 0);
+                Location current = getAngleLocation(angle, radius * range).add(0, (phi + 1) / 8, 0);
 
                 ParticleEffect.CLOUD.display(0.0f, 0.0f, 0.0f, 0.0f, 3, current, ChissentialsPlugin.PARTICLE_RANGE);
             }
 
-            Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), Radius, 1.5, Radius);
+            Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), radius, 1.5, radius);
 
             for (Entity entity : entities) {
                 if (entity == player) continue;
@@ -64,7 +71,7 @@ public class LegSweep extends ChiAbility implements AddonAbility {
                 Vector entityPos = entity.getLocation().toVector().setY(0);
                 Vector playerPos = player.getLocation().toVector().setY(0);
 
-                if (entityPos.distanceSquared(playerPos) > Radius * Radius) continue;
+                if (entityPos.distanceSquared(playerPos) > radius * radius) continue;
 
                 Vector toEntity = entityPos.subtract(playerPos);
                 double entityAngle = Math.atan2(toEntity.getZ(), toEntity.getX());
@@ -96,6 +103,11 @@ public class LegSweep extends ChiAbility implements AddonAbility {
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public boolean isSneakAbility() {
         return false;
     }
@@ -107,7 +119,7 @@ public class LegSweep extends ChiAbility implements AddonAbility {
 
     @Override
     public long getCooldown() {
-        return 0;
+        return cooldown;
     }
 
     @Override
@@ -138,5 +150,24 @@ public class LegSweep extends ChiAbility implements AddonAbility {
     @Override
     public String getVersion() {
         return ChissentialsPlugin.version;
+    }
+
+    public static class Config extends Configurable {
+        public Config(ChissentialsPlugin plugin) {
+            super(plugin);
+
+            onConfigReload();
+        }
+
+        @Override
+        public void onConfigReload() {
+            enabled = this.config.getBoolean("Chi.LegSweep.Enabled", true);
+            cooldown = this.config.getLong("Chi.LegSweep.Cooldown", DEFAULT_COOLDOWN);
+            stunDuration = this.config.getLong("Chi.LegSweep.StunDuration", DEFAULT_STUN_DURATION);
+            sweepDuration = this.config.getLong("Chi.LegSweep.SweepDuration", DEFAULT_SWEEP_DURATION);
+            radius = this.config.getDouble("Chi.LegSweep.SweepRadius", DEFAULT_SWEEP_RADIUS);
+
+            updateDelay = sweepDuration / UpdateCount;
+        }
     }
 }

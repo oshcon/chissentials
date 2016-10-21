@@ -1,6 +1,7 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
+import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
@@ -24,15 +25,25 @@ import java.util.Collection;
 public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     private enum State { Movement, GroundWait, ExplosionStart, ExplosionMid, ExplosionEnd }
 
+    private static final long DEFAULT_COOLDOWN = 16000;
+    private static final double DEFAULT_SPEED = 20.0;
+    private static final long DEFAULT_DURATION = 2000;
+    private static final double DEFAULT_EXPLOSION_RADIUS = 3.5;
+    private static final long DEFAULT_GROUND_WAIT_TIME = 1000;
+    private static final double DEFAULT_DAMAGE = 20.0;
+
     private static final long ExplosionTransitionDelay = 100;
     private static final int ExplosionParticleCount = 24;
+
+    private static boolean enabled = true;
+    private static long cooldown = DEFAULT_COOLDOWN;
     // Blocks per second
-    private static final double speed = 20.0;
-    private static final long duration = 2000;
-    private static final double ExplosionRadius = 3.5;
+    private static double speed = DEFAULT_SPEED;
+    private static long duration = DEFAULT_DURATION;
+    private static double ExplosionRadius = DEFAULT_EXPLOSION_RADIUS;
     // Maximum amount of time to wait for player to hit ground after stopping movement early
-    private static final long PlayerGroundWaitTime = 1000;
-    private static double damage = 20.0;
+    private static long PlayerGroundWaitTime = DEFAULT_GROUND_WAIT_TIME;
+    private static double damage = DEFAULT_DAMAGE;
 
     private ArmorStand vehicle;
     private Vector direction;
@@ -68,7 +79,6 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
         this.start();
     }
-
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerSwing(PlayerAnimationEvent event) {
@@ -231,6 +241,11 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public boolean isSneakAbility() {
         return false;
     }
@@ -242,7 +257,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public long getCooldown() {
-        return 0;
+        return cooldown;
     }
 
     @Override
@@ -273,5 +288,24 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     @Override
     public String getVersion() {
         return ChissentialsPlugin.version;
+    }
+
+    public static class Config extends Configurable {
+        public Config(ChissentialsPlugin plugin) {
+            super(plugin);
+
+            onConfigReload();
+        }
+
+        @Override
+        public void onConfigReload() {
+            enabled = this.config.getBoolean("Chi.FlyingKick.Enabled", true);
+            cooldown = this.config.getLong("Chi.FlyingKick.Cooldown", DEFAULT_COOLDOWN);
+            speed = this.config.getDouble("Chi.FlyingKick.Speed", DEFAULT_SPEED);
+            duration = this.config.getLong("Chi.FlyingKick.Duration", DEFAULT_DURATION);
+            ExplosionRadius = this.config.getDouble("Chi.FlyingKick.ExplosionRadius", DEFAULT_EXPLOSION_RADIUS);
+            PlayerGroundWaitTime = this.config.getLong("Chi.FlyingKick.GroundWaitTime", DEFAULT_GROUND_WAIT_TIME);
+            damage = this.config.getDouble("Chi.FlyingKick.Damage", DEFAULT_DAMAGE);
+        }
     }
 }

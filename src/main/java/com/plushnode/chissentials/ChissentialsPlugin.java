@@ -1,5 +1,10 @@
 package com.plushnode.chissentials;
 
+import com.plushnode.chissentials.abilities.chi.FlyingKick;
+import com.plushnode.chissentials.abilities.chi.Karma;
+import com.plushnode.chissentials.abilities.chi.KickPunch;
+import com.plushnode.chissentials.abilities.chi.LegSweep;
+import com.plushnode.chissentials.listeners.BendingListener;
 import com.plushnode.chissentials.listeners.EntityListener;
 import com.plushnode.chissentials.listeners.StunListener;
 import com.projectkorra.projectkorra.ability.CoreAbility;
@@ -19,16 +24,29 @@ public class ChissentialsPlugin extends JavaPlugin {
     public void onEnable() {
         plugin = this;
 
+        saveDefaultConfig();
+
         developer = String.join(", ", getDescription().getAuthors());
         version = getDescription().getVersion();
 
-        logger.info("Registering Chissentials abilities with ProjectKorra.");
-        CoreAbility.registerPluginAbilities(this, "com.plushnode.chissentials.abilities");
-
         this.getServer().getPluginManager().registerEvents(new EntityListener(this), this);
         this.getServer().getPluginManager().registerEvents(new StunListener(), this);
+        this.getServer().getPluginManager().registerEvents(new BendingListener(this), this);
 
         StunManager.get().runTaskTimer(this, 0L, 5L);
+
+        new FlyingKick.Config(this);
+        new Karma.Config(this);
+        new KickPunch.Config(this);
+        new LegSweep.Config(this);
+
+        // Register after loading the config so enabled will be set correctly
+        registerAbilities();
+    }
+
+    public void registerAbilities() {
+        logger.info("Registering Chissentials abilities with ProjectKorra.");
+        CoreAbility.registerPluginAbilities(this, "com.plushnode.chissentials.abilities");
     }
 
     @Override

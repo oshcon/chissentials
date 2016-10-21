@@ -2,6 +2,7 @@ package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
+import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
@@ -12,9 +13,16 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAbility {
+    private static final long DEFAULT_COOLDOWN = 6000;
+    private static final double DEFAULT_DAMAGE = 3.0;
+
     private static final long Duration = 150;
+
+    private static boolean enabled = true;
+    private static long cooldown = DEFAULT_COOLDOWN;
+    private static double damage = DEFAULT_DAMAGE;
+
     private ArmorStand vehicle;
-    private static double damage = 10.0;
     private boolean isSprinting;
 
     public KickPunch(Player player) {
@@ -58,6 +66,11 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public boolean isSneakAbility() {
         return false;
     }
@@ -69,7 +82,7 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
 
     @Override
     public long getCooldown() {
-        return 0;
+        return cooldown;
     }
 
     @Override
@@ -100,5 +113,20 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
     @Override
     public String getVersion() {
         return ChissentialsPlugin.version;
+    }
+
+    public static class Config extends Configurable {
+        public Config(ChissentialsPlugin plugin) {
+            super(plugin);
+
+            onConfigReload();
+        }
+
+        @Override
+        public void onConfigReload() {
+            enabled = this.config.getBoolean("Chi.KickPunch.Enabled", true);
+            cooldown = this.config.getLong("Chi.KickPunch.Cooldown", DEFAULT_COOLDOWN);
+            damage = this.config.getDouble("Chi.KickPunch.Damage", DEFAULT_DAMAGE);
+        }
     }
 }

@@ -1,0 +1,40 @@
+Chi:
+  FlyingKick:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 16000
+    # Number of blocks per second.
+    Speed: 20.0
+    # Maximum amount of time the movement state can last.
+    Duration: 2000
+    # How large the explosion at the end of the movement state is.
+    # It should be pretty small because the particles are rendered in 3 waves.
+    ExplosionRadius: 3.5
+    # How long the caster has to hit the ground before the explosion is cancelled.
+    GroundWaitTime: 1000
+    # Amount of damage the explosion does. 1 damage = 0.5 hearts.
+    Damage: 3
+  Karma:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 40000
+    # How many blocks away the target can be.
+    Range: 30.0
+    # How long Karma is active in milliseconds.
+    Duration: 6000
+  KickPunch:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 6000
+    # Amount of damage done. 1 damage = 0.5 hearts
+    Damage: 3
+  LegSweep:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 12000
+    # How long the stun lasts in milliseconds.
+    StunDuration: 1000
+    # How long it takes to do a full sweep in milliseconds.
+    SweepDuration: 500
+    # The length of the sweep in blocks.
+    SweepRadius: 3.0
