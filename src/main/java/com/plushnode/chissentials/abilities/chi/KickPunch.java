@@ -51,12 +51,18 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
     @Override
     public void progress() {
         ActionBar.sendActionBar("", player);
-        if (System.currentTimeMillis() >= this.startTime + Duration) {
+        if (System.currentTimeMillis() >= this.startTime + Duration || player.isDead() || !player.isOnline()) {
             Entity passenger = vehicle.getPassenger();
+
             if (passenger != null)
                 passenger.leaveVehicle();
+
             vehicle.remove();
-            player.setSprinting(isSprinting);
+
+            if (!player.isDead() && player.isOnline()) {
+                player.setSprinting(isSprinting);
+            }
+
             remove();
         }
     }

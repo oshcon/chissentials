@@ -50,6 +50,11 @@ public class LegSweep extends ChiAbility implements AddonAbility {
     public void progress() {
         long time = System.currentTimeMillis();
 
+        if (player.isDead() || !player.isOnline()) {
+            remove();
+            return;
+        }
+
         if (time >= lastUpdate + updateDelay) {
             double angle = theta + yaw;
             double phi = Math.sin(angle);

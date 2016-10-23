@@ -142,6 +142,11 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         switch (state) {
             case Movement:
             {
+                if (player.isDead() || !player.isOnline()) {
+                    destroy();
+                    return;
+                }
+
                 moveVehicle();
 
                 if (time >= this.startTime + duration) {
@@ -151,8 +156,17 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
             break;
             case GroundWait:
             {
+                if (player.isDead() || !player.isOnline()) {
+                    destroy();
+                    return;
+                }
+
                 if (player.isOnGround()) {
-                    transitionState(State.ExplosionStart);
+                    if (bPlayer.canBend(this)) {
+                        transitionState(State.ExplosionStart);
+                    } else {
+                        destroy();
+                    }
                 } else {
                     if (time >= stateStart + PlayerGroundWaitTime) {
                         // Cancel the explosion if player takes too long to hit the ground.

@@ -63,6 +63,11 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
     public void progress() {
         long time = System.currentTimeMillis();
 
+        if (player.isDead() || !player.isOnline() || !target.isValid()) {
+            remove();
+            return;
+        }
+
         if (time >= lastDisplay + DisplayDelay) {
             Location playerLoc = player.getLocation().clone().add(0, 2.5, 0);
             Location targetLoc = target.getLocation().clone().add(0, 2.5, 0);
