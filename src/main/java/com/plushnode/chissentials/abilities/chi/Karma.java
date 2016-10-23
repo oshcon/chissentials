@@ -1,6 +1,7 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
+import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
@@ -19,29 +20,39 @@ import org.bukkit.util.Vector;
 import java.util.Collection;
 
 public class Karma extends ChiAbility implements AddonAbility, Listener {
-    private static final double DEFAULT_RANGE = 30.0;
-    private static final long DEFAULT_DURATION = 6000;
     private static final long DEFAULT_COOLDOWN = 40000;
+    private static final double DEFAULT_RANGE = 30.0;
+    private static final long DEFAULT_BASE_DURATION = 3000;
+    private static final long DEFAULT_MAX_DURATION = 6000;
 
     private static final long DisplayDelay = 200;
 
     private static boolean enabled = true;
     private static long cooldown = DEFAULT_COOLDOWN;
     private static double range = DEFAULT_RANGE;
-    private static double duration = DEFAULT_DURATION;
+    private static long baseDuration = DEFAULT_BASE_DURATION;
+    private static long maxDuration = DEFAULT_MAX_DURATION;
 
     private LivingEntity target;
     private long lastDisplay = 0;
+    private long duration;
 
     public Karma(Player player) {
         super(player);
 
         this.target = getTargetedEntity(range, 1.5);
-
         if (this.target == null) return;
 
         BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
         if (bPlayer == null) return;
+
+        if (maxDuration > baseDuration) {
+            int comboPoints = ComboPointManager.get().spendAllComboPoints(player);
+
+            duration = Math.round(baseDuration + (maxDuration - baseDuration) * ComboPointManager.getComboPercent(comboPoints));
+        } else {
+            duration = baseDuration;
+        }
 
         bPlayer.addCooldown(this);
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
@@ -181,7 +192,8 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
             enabled = this.config.getBoolean("Chi.Karma.Enabled", true);
             cooldown = this.config.getLong("Chi.Karma.Cooldown", DEFAULT_COOLDOWN);
             range = this.config.getDouble("Chi.Karma.Range", DEFAULT_RANGE);
-            duration = this.config.getLong("Chi.Karma.Duration", DEFAULT_DURATION);
+            baseDuration = this.config.getLong("Chi.Karma.BaseDuration", DEFAULT_BASE_DURATION);
+            maxDuration = this.config.getLong("Chi.Karma.MaxDuration", DEFAULT_MAX_DURATION);
         }
     }
 }

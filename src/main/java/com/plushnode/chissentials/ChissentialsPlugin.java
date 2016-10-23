@@ -4,6 +4,7 @@ import com.plushnode.chissentials.abilities.chi.FlyingKick;
 import com.plushnode.chissentials.abilities.chi.Karma;
 import com.plushnode.chissentials.abilities.chi.KickPunch;
 import com.plushnode.chissentials.abilities.chi.LegSweep;
+import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.listeners.BendingListener;
 import com.plushnode.chissentials.listeners.EntityListener;
 import com.plushnode.chissentials.listeners.StunListener;
@@ -34,6 +35,7 @@ public class ChissentialsPlugin extends JavaPlugin {
         this.getServer().getPluginManager().registerEvents(new BendingListener(this), this);
 
         StunManager.get().runTaskTimer(this, 0L, 5L);
+        ComboPointManager.get().runTaskTimer(this, 0L, 5L);
 
         new FlyingKick.Config(this);
         new Karma.Config(this);

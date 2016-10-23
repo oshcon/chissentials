@@ -20,14 +20,17 @@ Chi:
     Cooldown: 40000
     # How many blocks away the target can be.
     Range: 30.0
-    # How long Karma is active in milliseconds.
-    Duration: 6000
+    # How long Karma lasts with 0 combo points in milliseconsd.
+    # If BaseDuration is higher than MaxDuration, Karma won't use any combo points and will default to BaseDuration.
+    BaseDuration: 3000
+    # How long Karma lasts with full combo points in milliseconds.
+    MaxDuration: 6000
   KickPunch:
     Enabled: true
     # Cooldown in milliseconds.
-    Cooldown: 6000
+    Cooldown: 1500
     # Amount of damage done. 1 damage = 0.5 hearts
-    Damage: 3
+    Damage: 2
   LegSweep:
     Enabled: true
     # Cooldown in milliseconds.
