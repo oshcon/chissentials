@@ -23,7 +23,7 @@ import org.bukkit.util.Vector;
 import java.util.Collection;
 
 public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
-    private enum State { Movement, GroundWait, ExplosionStart, ExplosionMid, ExplosionEnd }
+    private enum State { Init, Movement, GroundWait, ExplosionStart, ExplosionMid, ExplosionEnd }
 
     private static final long DEFAULT_COOLDOWN = 16000;
     private static final double DEFAULT_SPEED = 20.0;
@@ -47,7 +47,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     private ArmorStand vehicle;
     private Vector direction;
-    private State state = State.Movement;
+    private State state = State.Init;
     private long stateStart;
     private Location explosionLocation;
     private int startY;
@@ -138,6 +138,10 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
     @Override
     public void progress() {
         long time = System.currentTimeMillis();
+        
+        if (state == State.Init) {
+            transitionState(State.Movement);
+        }
 
         switch (state) {
             case Movement:
@@ -162,7 +166,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
                 }
 
                 if (player.isOnGround()) {
-                    if (bPlayer.canBend(this)) {
+                    if (bPlayer.canBendIgnoreBindsCooldowns(this)) {
                         transitionState(State.ExplosionStart);
                     } else {
                         destroy();
