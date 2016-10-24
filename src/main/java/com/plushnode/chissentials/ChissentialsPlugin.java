@@ -1,9 +1,6 @@
 package com.plushnode.chissentials;
 
-import com.plushnode.chissentials.abilities.chi.FlyingKick;
-import com.plushnode.chissentials.abilities.chi.Karma;
-import com.plushnode.chissentials.abilities.chi.KickPunch;
-import com.plushnode.chissentials.abilities.chi.LegSweep;
+import com.plushnode.chissentials.abilities.chi.*;
 import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.listeners.BendingListener;
 import com.plushnode.chissentials.listeners.EntityListener;

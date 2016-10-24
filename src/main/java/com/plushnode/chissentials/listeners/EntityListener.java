@@ -1,10 +1,7 @@
 package com.plushnode.chissentials.listeners;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
-import com.plushnode.chissentials.abilities.chi.FlyingKick;
-import com.plushnode.chissentials.abilities.chi.Karma;
-import com.plushnode.chissentials.abilities.chi.KickPunch;
-import com.plushnode.chissentials.abilities.chi.LegSweep;
+import com.plushnode.chissentials.abilities.chi.*;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.CoreAbility;
@@ -12,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
@@ -63,6 +61,7 @@ public class EntityListener implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
         if (!(event.getDamager() instanceof Player)) return;
+        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK) return;
 
         Player damager = (Player)event.getDamager();
 

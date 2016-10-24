@@ -7,6 +7,7 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
+import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -67,7 +68,7 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
 
         event.setCancelled(true);
 
-        target.damage(event.getDamage());
+        DamageHandler.damageEntity(target, event.getDamage(), this);
     }
 
     @Override

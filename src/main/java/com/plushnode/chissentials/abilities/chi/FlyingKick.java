@@ -6,6 +6,7 @@ import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.util.ActionBar;
+import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -74,7 +75,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
         this.direction = player.getLocation().getDirection().clone().setY(0).normalize();
         this.startY = player.getLocation().getBlockY();
-        this.stateStart = this.startTime;
+        this.stateStart = this.getStartTime();
 
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
         this.start();
@@ -117,7 +118,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
                     if (!(entity instanceof LivingEntity)) continue;
 
                     if (entity.getLocation().distanceSquared(this.explosionLocation) <= ExplosionRadius * ExplosionRadius) {
-                        ((LivingEntity) entity).damage(damage);
+                        DamageHandler.damageEntity(entity, damage, this);
                     }
                 }
             }
@@ -147,21 +148,21 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
             case Movement:
             {
                 if (player.isDead() || !player.isOnline()) {
-                    destroy();
+                    remove();
                     return;
                 }
 
                 moveVehicle();
 
-                if (time >= this.startTime + duration) {
-                    destroy();
+                if (time >= this.getStartTime() + duration) {
+                    remove();
                 }
             }
             break;
             case GroundWait:
             {
                 if (player.isDead() || !player.isOnline()) {
-                    destroy();
+                    remove();
                     return;
                 }
 
@@ -169,12 +170,12 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
                     if (bPlayer.canBendIgnoreBindsCooldowns(this)) {
                         transitionState(State.ExplosionStart);
                     } else {
-                        destroy();
+                        remove();
                     }
                 } else {
                     if (time >= stateStart + PlayerGroundWaitTime) {
                         // Cancel the explosion if player takes too long to hit the ground.
-                        destroy();
+                        remove();
                     }
                 }
             }
@@ -196,7 +197,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
             case ExplosionEnd:
             {
                 if (time >= stateStart + ExplosionTransitionDelay) {
-                    destroy();
+                    remove();
                 }
             }
             break;
@@ -251,11 +252,13 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         vehicle.remove();
     }
 
-    private void destroy() {
+    @Override
+    public void remove() {
         destroyVehicle();
 
         PlayerAnimationEvent.getHandlerList().unregister(this);
-        remove();
+
+        super.remove();
     }
 
     @Override

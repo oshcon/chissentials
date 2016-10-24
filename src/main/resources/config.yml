@@ -29,8 +29,9 @@ Chi:
     Enabled: true
     # Cooldown in milliseconds.
     Cooldown: 1500
-    # Amount of damage done. 1 damage = 0.5 hearts
+    # Amount of damage done. 1 damage = 0.5 hearts.
     Damage: 2
+    ComboPointsGenerated: 2
   LegSweep:
     Enabled: true
     # Cooldown in milliseconds.
