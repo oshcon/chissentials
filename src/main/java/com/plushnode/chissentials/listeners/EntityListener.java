@@ -54,6 +54,8 @@ public class EntityListener implements Listener {
 
         if (boundAbility.getClass().equals(Karma.class)) {
             new Karma(event.getPlayer());
+        } else if (boundAbility.getClass().equals(Ambush.class)) {
+            new Ambush(event.getPlayer());
         }
     }
 

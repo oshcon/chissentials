@@ -42,3 +42,15 @@ Chi:
     SweepDuration: 500
     # The length of the sweep in blocks.
     SweepRadius: 3.0
+  Ambush:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 12000
+    # How much damage the attack from stealth deals. 1 damage = 0.5 hearts.
+    Damage: 6
+    # How long the invisibility lasts in milliseconds.
+    StealthDuration: 6000
+    # Whether or not being in stealth displays particles on movement.
+    DisplayStealthParticles: true
+    # How many blocks away the chi blocker must be from entities to use Ambush.
+    NearbyRange: 10.0

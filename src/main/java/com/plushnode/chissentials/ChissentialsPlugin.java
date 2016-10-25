@@ -38,6 +38,7 @@ public class ChissentialsPlugin extends JavaPlugin {
         new Karma.Config(this);
         new KickPunch.Config(this);
         new LegSweep.Config(this);
+        new Ambush.Config(this);
 
         // Register after loading the config so enabled will be set correctly
         registerAbilities();
