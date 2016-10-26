@@ -72,7 +72,8 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
         }
     }
 
-    public double getSwingDamage() {
+    @Override
+    public double getSwingDamage(Player player, Entity target) {
         return damage;
     }
 

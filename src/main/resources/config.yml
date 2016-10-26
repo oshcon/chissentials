@@ -54,3 +54,9 @@ Chi:
     DisplayStealthParticles: true
     # How many blocks away the chi blocker must be from entities to use Ambush.
     NearbyRange: 10.0
+  DeadlyPunch:
+    Enabled: true
+    # Cooldown in milliseconds.
+    Cooldown: 1500
+    # How much damage the attack deals at full combo points. 1 damage = 0.5 hearts.
+    MaxDamage: 8

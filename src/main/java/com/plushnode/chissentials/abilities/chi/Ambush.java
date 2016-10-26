@@ -25,7 +25,6 @@ import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collection;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static final long DEFAULT_COOLDOWN = 25000;
@@ -44,6 +43,8 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static double nearbyRange = DEFAULT_NEARBY_RANGE;
 
     private boolean removeNextTick = false;
+    private Location beginLocation;
+    private long lastParticleDisplay = 0;
 
     public Ambush(Player player) {
         super(player);
@@ -60,6 +61,8 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
 
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, duration, 1));
 
+        beginLocation = player.getLocation().clone().add(player.getLocation().getDirection());
+
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
 
         this.start();
@@ -75,6 +78,11 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     @Override
     public void progress() {
         long time = System.currentTimeMillis();
+
+        if (time >= lastParticleDisplay + 20 && time < getStartTime() + 2000) {
+            ParticleEffect.CRIT.display(0.5f, 1.0f, 0.5f, 0.0f, 30, beginLocation, ChissentialsPlugin.PARTICLE_RANGE);
+            lastParticleDisplay = time;
+        }
 
         if (time > getStartTime() + stealthDuration || removeNextTick) {
             remove();

@@ -1,18 +1,14 @@
 package com.plushnode.chissentials.combopoint;
 
 import com.projectkorra.projectkorra.util.ActionBar;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
 public class ComboPointManager extends BukkitRunnable {
-    private static final ChatColor ComboColor = ChatColor.GOLD;
-    private static final String ComboString = "- ";
     private static final int MaxComboPoints = 5;
     private static ComboPointManager instance;
 
@@ -82,6 +78,7 @@ public class ComboPointManager extends BukkitRunnable {
         if (amount > 0) {
             playerComboPoints.put(player, amount);
         } else {
+            ActionBar.sendActionBar("", player);
             playerComboPoints.remove(player);
         }
     }
@@ -96,18 +93,11 @@ public class ComboPointManager extends BukkitRunnable {
             Integer amount = entry.getValue();
 
             if (player.isDead() || !player.isOnline()) {
-                System.out.println("Clearing combo points for " + player.getName());
                 iter.remove();
                 continue;
             }
 
-            if (amount > 0) {
-                ActionBar.sendActionBar(ComboColor + formatComboMessage(amount), player);
-            }
+            ActionBar.sendActionBar(ComboPointView.formatComboMessage(amount), player);
         }
-    }
-
-    private String formatComboMessage(int amount) {
-        return String.join("", Collections.nCopies(amount, ComboString));
     }
 }

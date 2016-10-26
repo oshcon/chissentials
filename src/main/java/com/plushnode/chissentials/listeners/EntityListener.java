@@ -81,10 +81,12 @@ public class EntityListener implements Listener {
             new FlyingKick(damager);
         } else if (boundAbility.getClass().equals(LegSweep.class)) {
             new LegSweep(damager);
+        } else if (boundAbility.getClass().equals(DeadlyPunch.class)) {
+            new DeadlyPunch(damager);
         }
 
         if (boundAbility instanceof SwingDamageAbility) {
-            double newDamage = ((SwingDamageAbility) boundAbility).getSwingDamage();
+            double newDamage = ((SwingDamageAbility) boundAbility).getSwingDamage(damager, event.getEntity());
 
             event.setDamage(newDamage);
         }
