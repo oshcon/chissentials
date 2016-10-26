@@ -18,3 +18,8 @@ Stun targets if they collide with the front of the sweep.
 ## Karma
 Redirect all damage taken to a target for a short period of time.  
 ![example](https://thumbs.gfycat.com/MiniatureHiddenFunnelweaverspider-size_restricted.gif "Karma")
+
+## Ambush and DeadlyPunch
+Ambush: Stealth for a short period of time. Deal extra damage and generate two combo points on the next attack.  
+DeadlyPunch: Consume combo points to deal extra damage.  
+![example](https://thumbs.gfycat.com/ShrillDeterminedCatfish-size_restricted.gif "Ambush")
