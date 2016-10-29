@@ -50,8 +50,6 @@ Chi:
     Damage: 6
     # How long the invisibility lasts in milliseconds.
     StealthDuration: 6000
-    # Whether or not being in stealth displays particles on movement.
-    DisplayStealthParticles: true
     # How many blocks away the chi blocker must be from entities to use Ambush.
     NearbyRange: 10.0
   DeadlyPunch:

@@ -38,13 +38,11 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static double damage = DEFAULT_DAMAGE;
     private static int comboGeneration = DEFAULT_COMBO_GEN;
     private static long stealthDuration = DEFAULT_STEALTH_DURATION;
-    // todo: implement stealth particles
-    private static boolean displayStealthParticles = true;
     private static double nearbyRange = DEFAULT_NEARBY_RANGE;
 
     private boolean removeNextTick = false;
     private Location beginLocation;
-    private long lastParticleDisplay = 0;
+    private boolean vanishParticlesDisplayed = false;
 
     public Ambush(Player player) {
         super(player);
@@ -79,9 +77,13 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     public void progress() {
         long time = System.currentTimeMillis();
 
-        if (time >= lastParticleDisplay + 20 && time < getStartTime() + 2000) {
-            ParticleEffect.CRIT.display(0.5f, 1.0f, 0.5f, 0.0f, 30, beginLocation, ChissentialsPlugin.PARTICLE_RANGE);
-            lastParticleDisplay = time;
+        if (!vanishParticlesDisplayed) {
+            // Render vertical part of smoke
+            ParticleEffect.SMOKE_LARGE.display(0.5f, 1.0f, 0.5f, 0.0f, 60, beginLocation.clone().add(0, 1, 0), ChissentialsPlugin.PARTICLE_RANGE);
+            // Render wide bottom part of smoke
+            ParticleEffect.SMOKE_LARGE.display(1.0f, 0.5f, 1.0f, 0.0f, 120, beginLocation, ChissentialsPlugin.PARTICLE_RANGE);
+
+            vanishParticlesDisplayed = true;
         }
 
         if (time > getStartTime() + stealthDuration || removeNextTick) {
@@ -204,7 +206,6 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             damage = this.config.getDouble("Chi.Ambush.Damage", DEFAULT_DAMAGE);
             comboGeneration = this.config.getInt("Chi.Ambush.ComboPointsGenerated", DEFAULT_COMBO_GEN);
             stealthDuration = this.config.getLong("Chi.Ambush.StealthDuration", DEFAULT_STEALTH_DURATION);
-            displayStealthParticles = this.config.getBoolean("Chi.Ambush.DisplayStealthParticles", true);
             nearbyRange = this.config.getDouble("Chi.Ambush.NearbyRange", DEFAULT_NEARBY_RANGE);
         }
     }
