@@ -4,6 +4,7 @@ import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.abilities.chi.*;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
 import com.projectkorra.projectkorra.BendingPlayer;
+import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -36,6 +37,8 @@ public class EntityListener implements Listener {
             new FlyingKick(event.getPlayer());
         } else if (boundAbility.getClass().equals(LegSweep.class)) {
             new LegSweep(event.getPlayer());
+        } else if (boundAbility.getClass().equals(Lunge.class)) {
+            new Lunge(event.getPlayer());
         }
     }
 
@@ -56,6 +59,21 @@ public class EntityListener implements Listener {
             new Karma(event.getPlayer());
         } else if (boundAbility.getClass().equals(Ambush.class)) {
             new Ambush(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.isCancelled()) return;
+        if (!(event.getEntity() instanceof Player)) return;
+
+        BendingPlayer bPlayer = BendingPlayer.getBendingPlayer((Player)event.getEntity());
+        if (bPlayer == null) return;
+
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL && bPlayer.hasElement(Element.CHI)) {
+            if (bPlayer.isOnCooldown("Lunge")) {
+                event.setCancelled(true);
+            }
         }
     }
 

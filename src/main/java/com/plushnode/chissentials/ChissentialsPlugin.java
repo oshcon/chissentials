@@ -39,6 +39,8 @@ public class ChissentialsPlugin extends JavaPlugin {
         new KickPunch.Config(this);
         new LegSweep.Config(this);
         new Ambush.Config(this);
+        new DeadlyPunch.Config(this);
+        new Lunge.Config(this);
 
         // Register after loading the config so enabled will be set correctly
         registerAbilities();
