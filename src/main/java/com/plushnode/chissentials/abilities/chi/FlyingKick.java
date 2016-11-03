@@ -311,6 +311,11 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -320,13 +325,13 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.FlyingKick.Enabled", true);
-            cooldown = this.config.getLong("Chi.FlyingKick.Cooldown", DEFAULT_COOLDOWN);
-            speed = this.config.getDouble("Chi.FlyingKick.Speed", DEFAULT_SPEED);
-            duration = this.config.getLong("Chi.FlyingKick.Duration", DEFAULT_DURATION);
-            ExplosionRadius = this.config.getDouble("Chi.FlyingKick.ExplosionRadius", DEFAULT_EXPLOSION_RADIUS);
-            PlayerGroundWaitTime = this.config.getLong("Chi.FlyingKick.GroundWaitTime", DEFAULT_GROUND_WAIT_TIME);
-            damage = this.config.getDouble("Chi.FlyingKick.Damage", DEFAULT_DAMAGE);
+            enabled = this.config.getBoolean("Abilities.Chi.FlyingKick.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.FlyingKick.Cooldown", DEFAULT_COOLDOWN);
+            speed = this.config.getDouble("Abilities.Chi.FlyingKick.Speed", DEFAULT_SPEED);
+            duration = this.config.getLong("Abilities.Chi.FlyingKick.Duration", DEFAULT_DURATION);
+            ExplosionRadius = this.config.getDouble("Abilities.Chi.FlyingKick.ExplosionRadius", DEFAULT_EXPLOSION_RADIUS);
+            PlayerGroundWaitTime = this.config.getLong("Abilities.Chi.FlyingKick.GroundWaitTime", DEFAULT_GROUND_WAIT_TIME);
+            damage = this.config.getDouble("Abilities.Chi.FlyingKick.Damage", DEFAULT_DAMAGE);
         }
     }
 }

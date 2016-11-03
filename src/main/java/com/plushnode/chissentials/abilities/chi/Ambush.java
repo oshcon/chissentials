@@ -19,6 +19,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -93,6 +94,12 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
 
     @EventHandler (priority = EventPriority.LOW)
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.getEntity() == this.player) {
+            // Destroy ability because the player was attacked.
+            remove();
+            return;
+        }
+
         if (event.getDamager() != this.player) return;
 
         if (!(event.getEntity() instanceof LivingEntity)) {
@@ -131,12 +138,31 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         removeNextTick = true;
     }
 
+    @EventHandler (priority = EventPriority.LOW)
+    public void onEntityDamage(EntityDamageEvent event) {
+        if (event.getEntity() == this.player) {
+            // Destroy ability because the player took damage.
+            remove();
+        }
+    }
+
+    @EventHandler (priority = EventPriority.LOW)
+    public void onAbilityStart(AbilityStartEvent event) {
+        if (event.getAbility() == this) return;
+
+        if (event.getAbility().getPlayer() == this.player) {
+            // Destroy this ability because the player casted while stealthing.
+            remove();
+        }
+    }
+
     @Override
     public void remove() {
         player.removePotionEffect(PotionEffectType.INVISIBILITY);
 
         EntityDamageByEntityEvent.getHandlerList().unregister(this);
         PlayerAnimationEvent.getHandlerList().unregister(this);
+        EntityDamageEvent.getHandlerList().unregister(this);
         AbilityStartEvent.getHandlerList().unregister(this);
 
         super.remove();
@@ -192,6 +218,11 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -201,12 +232,12 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.Ambush.Enabled", true);
-            cooldown = this.config.getLong("Chi.Ambush.Cooldown", DEFAULT_COOLDOWN);
-            damage = this.config.getDouble("Chi.Ambush.Damage", DEFAULT_DAMAGE);
-            comboGeneration = this.config.getInt("Chi.Ambush.ComboPointsGenerated", DEFAULT_COMBO_GEN);
-            stealthDuration = this.config.getLong("Chi.Ambush.StealthDuration", DEFAULT_STEALTH_DURATION);
-            nearbyRange = this.config.getDouble("Chi.Ambush.NearbyRange", DEFAULT_NEARBY_RANGE);
+            enabled = this.config.getBoolean("Abilities.Chi.Ambush.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.Ambush.Cooldown", DEFAULT_COOLDOWN);
+            damage = this.config.getDouble("Abilities.Chi.Ambush.Damage", DEFAULT_DAMAGE);
+            comboGeneration = this.config.getInt("Abilities.Chi.Ambush.ComboPointsGenerated", DEFAULT_COMBO_GEN);
+            stealthDuration = this.config.getLong("Abilities.Chi.Ambush.StealthDuration", DEFAULT_STEALTH_DURATION);
+            nearbyRange = this.config.getDouble("Abilities.Chi.Ambush.NearbyRange", DEFAULT_NEARBY_RANGE);
         }
     }
 }

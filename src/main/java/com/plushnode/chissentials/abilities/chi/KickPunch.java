@@ -127,6 +127,11 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -136,10 +141,10 @@ public class KickPunch extends ChiAbility implements AddonAbility, SwingDamageAb
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.KickPunch.Enabled", true);
-            cooldown = this.config.getLong("Chi.KickPunch.Cooldown", DEFAULT_COOLDOWN);
-            damage = this.config.getDouble("Chi.KickPunch.Damage", DEFAULT_DAMAGE);
-            comboGeneration = this.config.getInt("Chi.KickPunch.ComboPointsGenerated", DEFAULT_COMBO_GEN);
+            enabled = this.config.getBoolean("Abilities.Chi.KickPunch.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.KickPunch.Cooldown", DEFAULT_COOLDOWN);
+            damage = this.config.getDouble("Abilities.Chi.KickPunch.Damage", DEFAULT_DAMAGE);
+            comboGeneration = this.config.getInt("Abilities.Chi.KickPunch.ComboPointsGenerated", DEFAULT_COMBO_GEN);
         }
     }
 }

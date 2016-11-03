@@ -157,6 +157,11 @@ public class LegSweep extends ChiAbility implements AddonAbility {
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -166,11 +171,11 @@ public class LegSweep extends ChiAbility implements AddonAbility {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.LegSweep.Enabled", true);
-            cooldown = this.config.getLong("Chi.LegSweep.Cooldown", DEFAULT_COOLDOWN);
-            stunDuration = this.config.getLong("Chi.LegSweep.StunDuration", DEFAULT_STUN_DURATION);
-            sweepDuration = this.config.getLong("Chi.LegSweep.SweepDuration", DEFAULT_SWEEP_DURATION);
-            radius = this.config.getDouble("Chi.LegSweep.SweepRadius", DEFAULT_SWEEP_RADIUS);
+            enabled = this.config.getBoolean("Abilities.Chi.LegSweep.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.LegSweep.Cooldown", DEFAULT_COOLDOWN);
+            stunDuration = this.config.getLong("Abilities.Chi.LegSweep.StunDuration", DEFAULT_STUN_DURATION);
+            sweepDuration = this.config.getLong("Abilities.Chi.LegSweep.SweepDuration", DEFAULT_SWEEP_DURATION);
+            radius = this.config.getDouble("Abilities.Chi.LegSweep.SweepRadius", DEFAULT_SWEEP_RADIUS);
 
             updateDelay = sweepDuration / UpdateCount;
         }

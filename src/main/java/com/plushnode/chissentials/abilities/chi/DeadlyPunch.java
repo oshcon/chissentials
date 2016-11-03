@@ -100,6 +100,11 @@ public class DeadlyPunch extends ChiAbility implements AddonAbility, SwingDamage
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -109,9 +114,9 @@ public class DeadlyPunch extends ChiAbility implements AddonAbility, SwingDamage
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.DeadlyPunch.Enabled", true);
-            cooldown = this.config.getLong("Chi.DeadlyPunch.Cooldown", DEFAULT_COOLDOWN);
-            maxDamage = this.config.getDouble("Chi.DeadlyPunch.MaxDamage", DEFAULT_MAX_DAMAGE);
+            enabled = this.config.getBoolean("Abilities.Chi.DeadlyPunch.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.DeadlyPunch.Cooldown", DEFAULT_COOLDOWN);
+            maxDamage = this.config.getDouble("Abilities.Chi.DeadlyPunch.MaxDamage", DEFAULT_MAX_DAMAGE);
         }
     }
 }

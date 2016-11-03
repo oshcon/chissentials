@@ -114,6 +114,11 @@ public class Lunge extends ChiAbility implements AddonAbility {
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -123,11 +128,11 @@ public class Lunge extends ChiAbility implements AddonAbility {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.Lunge.Enabled", true);
-            cooldown = this.config.getLong("Chi.Lunge.Cooldown", DEFAULT_COOLDOWN);
-            angle = this.config.getDouble("Chi.Lunge.Angle", DEFAULT_ANGLE);
-            speed = this.config.getDouble("Chi.Lunge.Speed", DEFAULT_SPEED);
-            displayParticles = this.config.getBoolean("Chi.Lunge.DisplayParticles", true);
+            enabled = this.config.getBoolean("Abilities.Chi.Lunge.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.Lunge.Cooldown", DEFAULT_COOLDOWN);
+            angle = this.config.getDouble("Abilities.Chi.Lunge.Angle", DEFAULT_ANGLE);
+            speed = this.config.getDouble("Abilities.Chi.Lunge.Speed", DEFAULT_SPEED);
+            displayParticles = this.config.getBoolean("Abilities.Chi.Lunge.DisplayParticles", true);
         }
     }
 }

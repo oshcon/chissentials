@@ -181,6 +181,11 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
         return ChissentialsPlugin.version;
     }
 
+    @Override
+    public String getDescription() {
+        return ChissentialsPlugin.plugin.getConfig().getString("Abilities.Chi." + this.getName() + ".Description");
+    }
+
     public static class Config extends Configurable {
         public Config(ChissentialsPlugin plugin) {
             super(plugin);
@@ -190,11 +195,11 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Chi.Karma.Enabled", true);
-            cooldown = this.config.getLong("Chi.Karma.Cooldown", DEFAULT_COOLDOWN);
-            range = this.config.getDouble("Chi.Karma.Range", DEFAULT_RANGE);
-            baseDuration = this.config.getLong("Chi.Karma.BaseDuration", DEFAULT_BASE_DURATION);
-            maxDuration = this.config.getLong("Chi.Karma.MaxDuration", DEFAULT_MAX_DURATION);
+            enabled = this.config.getBoolean("Abilities.Chi.Karma.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.Karma.Cooldown", DEFAULT_COOLDOWN);
+            range = this.config.getDouble("Abilities.Chi.Karma.Range", DEFAULT_RANGE);
+            baseDuration = this.config.getLong("Abilities.Chi.Karma.BaseDuration", DEFAULT_BASE_DURATION);
+            maxDuration = this.config.getLong("Abilities.Chi.Karma.MaxDuration", DEFAULT_MAX_DURATION);
         }
     }
 }
