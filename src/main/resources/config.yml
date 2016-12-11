@@ -79,3 +79,6 @@ Abilities:
       Angle: 12.0
       # The velocity in blocks per second.
       Speed: 50.0
+      # How many milliseconds it takes to cycle through all the colors in a rainbow lunge.
+      # Enable rainbow Lunge with Chissentials.Lunge.Rainbow permission.
+      RainbowCycleDuration: 600

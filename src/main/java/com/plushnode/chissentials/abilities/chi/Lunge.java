@@ -1,34 +1,39 @@
 package com.plushnode.chissentials.abilities.chi;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
-import com.plushnode.chissentials.ability.SwingDamageAbility;
-import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
-import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Location;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
+
+import java.awt.*;
+import java.util.Random;
 
 public class Lunge extends ChiAbility implements AddonAbility {
     private static final long DEFAULT_COOLDOWN = 6000;
     private static final double DEFAULT_SPEED = 10.0;
     private static final double DEFAULT_ANGLE = 20.0;
+    private static final long DEFAULT_RAINBOW_CYCLE_DURATION = 600;
 
     private static final long ParticleUpdateDelay = 25;
     private static final long Timeout = 4000;
     private static final long LaunchTime = 250;
+    private static final Random rand = new Random();
 
     private static boolean enabled = true;
     private static boolean displayParticles = true;
     private static long cooldown = DEFAULT_COOLDOWN;
     private static double speed = DEFAULT_SPEED;
     private static double angle = DEFAULT_ANGLE;
+    private static long rainbowCycleDuration = DEFAULT_RAINBOW_CYCLE_DURATION;
+
+    private boolean rainbowParticles;
+
 
     private long lastParticleDisplay = 0;
 
@@ -44,6 +49,8 @@ public class Lunge extends ChiAbility implements AddonAbility {
         double theta = Math.toRadians(angle);
         Vector direction = player.getLocation().getDirection().clone().setY(0).normalize();
         player.setVelocity(direction.clone().setY(Math.sin(theta)).multiply(speed / 20.0));
+        
+        rainbowParticles = player.hasPermission("Chissentials.Lunge.Rainbow");
 
         this.start();
     }
@@ -58,7 +65,33 @@ public class Lunge extends ChiAbility implements AddonAbility {
         }
 
         if (displayParticles && time >= lastParticleDisplay + ParticleUpdateDelay) {
-            ParticleEffect.CRIT.display(0.5f, 0.5f, 0.5f, 0.0f, 12, player.getLocation().add(0, 1.5, 0), ChissentialsPlugin.PARTICLE_RANGE);
+            final Location location = player.getLocation().clone().add(0, 1.5, 0);
+
+            if (!rainbowParticles) {
+                final float horizontalWiggle = 0.3f;
+                final float verticalWiggle = 0.5f;
+                int amount = 12;
+
+                ParticleEffect.CRIT.display(horizontalWiggle, verticalWiggle, horizontalWiggle, 0.0f, amount, location, ChissentialsPlugin.PARTICLE_RANGE);
+            } else {
+                final float horizontalWiggle = 0.6f;
+                final float verticalWiggle = 0.75f;
+                int amount = 16;
+                final long duration = time - getStartTime();
+
+                float hue = (duration % rainbowCycleDuration) / (float)rainbowCycleDuration;
+                int rgb = Color.HSBtoRGB(hue, 0.5f, 0.5f);
+                Color color = new Color(rgb);
+
+                for (int i = 0; i < amount; ++i) {
+                    Vector offset = new Vector(
+                            (rand.nextFloat() - 0.5f) * horizontalWiggle * 2,
+                            (rand.nextFloat() - 0.5f) * verticalWiggle * 2,
+                            (rand.nextFloat() - 0.5f) * horizontalWiggle * 2
+                    );
+                    ParticleEffect.REDSTONE.display(color.getRed(), color.getGreen(), color.getBlue(), 0.005f, 0, location.clone().add(offset), ChissentialsPlugin.PARTICLE_RANGE);
+                }
+            }
 
             lastParticleDisplay = time;
         }
@@ -133,6 +166,7 @@ public class Lunge extends ChiAbility implements AddonAbility {
             angle = this.config.getDouble("Abilities.Chi.Lunge.Angle", DEFAULT_ANGLE);
             speed = this.config.getDouble("Abilities.Chi.Lunge.Speed", DEFAULT_SPEED);
             displayParticles = this.config.getBoolean("Abilities.Chi.Lunge.DisplayParticles", true);
+            rainbowCycleDuration = this.config.getLong("Abilities.Chi.Lunge.RainbowCycleDuration", DEFAULT_RAINBOW_CYCLE_DURATION);
         }
     }
 }
