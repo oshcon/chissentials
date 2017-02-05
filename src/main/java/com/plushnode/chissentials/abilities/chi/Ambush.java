@@ -4,6 +4,7 @@ import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
+import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
@@ -11,7 +12,9 @@ import com.projectkorra.projectkorra.event.AbilityStartEvent;
 import com.projectkorra.projectkorra.event.EntityBendingDeathEvent;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -23,23 +26,25 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.Collection;
-import java.util.Optional;
 
 public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static final long DEFAULT_COOLDOWN = 25000;
     private static final double DEFAULT_DAMAGE = 5.0;
-    private static final int DEFAULT_COMBO_GEN = 2;
-    private static final long DEFAULT_STEALTH_DURATION = 6000;
-    private static final double DEFAULT_NEARBY_RANGE = 10.0;
+    private static final int DEFAULT_COMBO_GEN = 0;
+    private static final long DEFAULT_STEALTH_DURATION = 8000;
+    private static final double DEFAULT_VISION_RANGE = 10.0;
+    private static final double DEFAULT_VISION_ANGLE = 70.0;
 
     private static boolean enabled = true;
     private static long cooldown = DEFAULT_COOLDOWN;
     private static double damage = DEFAULT_DAMAGE;
     private static int comboGeneration = DEFAULT_COMBO_GEN;
     private static long stealthDuration = DEFAULT_STEALTH_DURATION;
-    private static double nearbyRange = DEFAULT_NEARBY_RANGE;
+    private static double visionRange = DEFAULT_VISION_RANGE;
+    private static double visionAngle = DEFAULT_VISION_ANGLE;
 
     private boolean removeNextTick = false;
     private Location beginLocation;
@@ -52,7 +57,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         if (bPlayer == null) return;
 
         if (CoreAbility.hasAbility(player, Ambush.class)) return;
-        if (nearbyRange > 0 && hasEntitiesNearby()) return;
+        if (visionRange > 0 && hasEntitiesNearby()) return;
 
         bPlayer.addCooldown(this);
 
@@ -67,11 +72,49 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         this.start();
     }
 
-    private boolean hasEntitiesNearby() {
-        Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), nearbyRange, nearbyRange, nearbyRange);
-        Optional<Entity> found = entities.stream().filter(entity -> (entity instanceof LivingEntity) && entity != player).findAny();
+    private boolean inEntityVisibilityCone(LivingEntity entity) {
+        if (entity.getWorld() != this.player.getWorld()) {
+            return false;
+        }
 
-        return found.isPresent();
+        if (entity instanceof Player) {
+            Player enemy = (Player)entity;
+
+            GameMode mode = enemy.getGameMode();
+            if (mode == GameMode.CREATIVE || mode == GameMode.SPECTATOR) {
+                return false;
+            }
+        }
+
+        boolean footObstruction = GeneralMethods.isObstructed(entity.getEyeLocation().clone(), this.player.getLocation().clone());
+        boolean obstructed = footObstruction && GeneralMethods.isObstructed(entity.getEyeLocation().clone(), this.player.getEyeLocation().clone());
+
+        if (obstructed) {
+            return false;
+        }
+
+        Vector viewDirection = entity.getLocation().getDirection().clone();
+        Vector toPlayer = this.player.getLocation().toVector().subtract(entity.getLocation().toVector());
+        double angle = viewDirection.angle(toPlayer);
+
+        return Math.toDegrees(angle) <= visionAngle;
+    }
+
+    private boolean hasEntitiesNearby() {
+        Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), visionRange, visionRange, visionRange);
+
+        for (Entity entity : entities) {
+            if (entity == player) continue;
+            if (!(entity instanceof LivingEntity)) continue;
+            if (entity instanceof ArmorStand) continue;
+            if (entity.getLocation().distanceSquared(this.player.getLocation()) > visionRange * visionRange) continue;
+
+            if (inEntityVisibilityCone((LivingEntity)entity)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -237,7 +280,13 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             damage = this.config.getDouble("Abilities.Chi.Ambush.Damage", DEFAULT_DAMAGE);
             comboGeneration = this.config.getInt("Abilities.Chi.Ambush.ComboPointsGenerated", DEFAULT_COMBO_GEN);
             stealthDuration = this.config.getLong("Abilities.Chi.Ambush.StealthDuration", DEFAULT_STEALTH_DURATION);
-            nearbyRange = this.config.getDouble("Abilities.Chi.Ambush.NearbyRange", DEFAULT_NEARBY_RANGE);
+            visionRange = this.config.getDouble("Abilities.Chi.Ambush.VisionRange", DEFAULT_VISION_RANGE);
+            visionAngle = this.config.getDouble("Abilities.Chi.Ambush.VisionAngle", DEFAULT_VISION_ANGLE);
+
+            if (visionRange == DEFAULT_VISION_RANGE) {
+                // Check the old config name
+                visionRange = this.config.getDouble("Abilities.Chi.Ambush.NearbyRange", DEFAULT_VISION_RANGE);
+            }
         }
     }
 }

@@ -51,16 +51,19 @@ Abilities:
     Ambush:
       Enabled: false
       # Cooldown in milliseconds.
-      Cooldown: 12000
-      Description: "Use sneak to vanish in a cloud of smoke. Attack the target while stealthed to gain extra combo points."
+      Cooldown: 25000
+      Description: "Use sneak to vanish in a cloud of smoke. Stealth can only be activated while not being watched. Attack the target while stealthed to deal extra damage."
       # How much damage the attack from stealth deals. 1 damage = 0.5 hearts.
-      Damage: 6
+      Damage: 5.0
       # How long the invisibility lasts in milliseconds.
-      StealthDuration: 6000
-      # How many blocks away the chi blocker must be from entities to use Ambush.
-      NearbyRange: 10.0
+      StealthDuration: 8000
+      # How many blocks away that entities can see.
+      # Set this to zero to disable the line of sight restriction.
+      VisionRange: 10.0
+      # How wide of an angle that entities can see.
+      VisionAngle: 70.0
       # The number of combo points to generate when a stealth attack is successful.
-      ComboPointsGenerated: 2
+      ComboPointsGenerated: 0
     DeadlyPunch:
       Enabled: false
       # Cooldown in milliseconds.
