@@ -65,7 +65,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
         bPlayer.addCooldown(this);
 
-        Location vehicleLocation = player.getLocation().clone();
+        Location vehicleLocation = player.getLocation().clone().add(0, 0.75, 0);
         vehicle = player.getWorld().spawn(vehicleLocation, ArmorStand.class);
         vehicle.setBasePlate(false);
         vehicle.setVisible(false);
@@ -84,6 +84,10 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onPlayerSwing(PlayerAnimationEvent event) {
+        // Punching blocks seems to send this event twice in a single tick.
+        // It would immediately cancel if a block is punched to start it.
+        if (System.currentTimeMillis() < getStartTime() + 100) return;
+
         if (event.getPlayer() == this.player && state == State.Movement) {
             event.setCancelled(true);
             destroyVehicle();
