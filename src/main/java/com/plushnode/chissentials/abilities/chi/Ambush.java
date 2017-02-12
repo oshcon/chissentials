@@ -181,8 +181,9 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         removeNextTick = true;
     }
 
-    @EventHandler (priority = EventPriority.LOW)
+    @EventHandler (priority = EventPriority.HIGH)
     public void onEntityDamage(EntityDamageEvent event) {
+        if (event.isCancelled()) return;
         if (event.getEntity() == this.player) {
             // Destroy ability because the player took damage.
             remove();

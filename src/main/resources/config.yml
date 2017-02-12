@@ -1,7 +1,7 @@
 Abilities:
   Chi:
     FlyingKick:
-      Enabled: false
+      Enabled: true
       # Cooldown in milliseconds.
       Cooldown: 16000
       # Number of blocks per second.
@@ -49,7 +49,7 @@ Abilities:
       # The length of the sweep in blocks.
       SweepRadius: 3.0
     Ambush:
-      Enabled: false
+      Enabled: true
       # Cooldown in milliseconds.
       Cooldown: 25000
       Description: "Use sneak to vanish in a cloud of smoke. Stealth can only be activated while not being watched. Attack the target while stealthed to deal extra damage."

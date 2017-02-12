@@ -5,6 +5,7 @@ import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
+import com.projectkorra.projectkorra.ability.ElementalAbility;
 import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
@@ -239,7 +240,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
 
     private boolean isPassableLocation(Location location) {
         Block block = location.getBlock();
-        return block.getType() == Material.AIR || block.isLiquid();
+        return isTransparent(block);
     }
 
     private void destroyVehicle() {
