@@ -113,16 +113,18 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         switch (state) {
             case ExplosionStart:
             {
-                this.explosionLocation = player.getWorld().getHighestBlockAt(player.getLocation()).getLocation().clone();
+                this.explosionLocation = player.getLocation().clone();
 
                 renderExplosion(ExplosionRadius * 0.3, 0);
 
-                Collection<Entity> nearbyEntities = player.getWorld().getNearbyEntities(player.getLocation(), ExplosionRadius + 1, 1.5, ExplosionRadius + 1);
+                Collection<Entity> nearbyEntities = player.getWorld().getNearbyEntities(player.getLocation(), ExplosionRadius + 3, 2.5, ExplosionRadius + 3);
+                final double realRadius = ExplosionRadius + 1;
+                
                 for (Entity entity : nearbyEntities) {
                     if (entity == player) continue;
                     if (!(entity instanceof LivingEntity)) continue;
 
-                    if (entity.getLocation().distanceSquared(this.explosionLocation) <= ExplosionRadius * ExplosionRadius) {
+                    if (entity.getLocation().distanceSquared(this.explosionLocation) <= realRadius * realRadius) {
                         DamageHandler.damageEntity(entity, damage, this);
                     }
                 }
@@ -226,7 +228,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
             vehicle.setVelocity(new Vector(0, 0, 0));
         } else if (!isPassableLocation(nextLocation)) {
             if (isPassableLocation(aboveNextLocation.clone().add(0, 1, 0)) && isPassableLocation(vehicle.getLocation().clone().add(0, 2, 0))) {
-                vehicle.setVelocity(delta.clone().add(new Vector(0, 2, 0)).normalize());
+                vehicle.setVelocity(delta.clone().normalize().add(new Vector(0, 1, 0)).multiply(speed / 20.0));
                 lastHeightChange = vehicle.getLocation().clone().add(delta);
             } else {
                 vehicle.setVelocity(new Vector(0, 0, 0));
