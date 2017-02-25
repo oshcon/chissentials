@@ -80,7 +80,7 @@ public class Lunge extends ChiAbility implements AddonAbility {
                 final long duration = time - getStartTime();
 
                 float hue = (duration % rainbowCycleDuration) / (float)rainbowCycleDuration;
-                int rgb = Color.HSBtoRGB(hue, 0.5f, 0.5f);
+                int rgb = Color.HSBtoRGB(hue, 0.75f, 0.75f);
                 Color color = new Color(rgb);
 
                 for (int i = 0; i < amount; ++i) {
