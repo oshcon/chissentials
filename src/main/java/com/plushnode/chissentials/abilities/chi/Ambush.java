@@ -11,6 +11,7 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.event.AbilityStartEvent;
 import com.projectkorra.projectkorra.event.EntityBendingDeathEvent;
 import com.projectkorra.projectkorra.util.ParticleEffect;
+import com.projectkorra.projectkorra.util.ReflectionHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -28,9 +29,17 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.*;
 import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Ambush extends ChiAbility implements AddonAbility, Listener {
+    private static Method getHandle = null, getDataWatcher = null, setData = null;
+    private static Constructor<?> DataWatcherObjectConstructor = null;
+    private static Field IntegerSerializer = null;
+    private static int mcVersion = 0;
+
     private static final long DEFAULT_COOLDOWN = 25000;
     private static final double DEFAULT_DAMAGE = 5.0;
     private static final int DEFAULT_COMBO_GEN = 0;
@@ -64,12 +73,67 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         int duration = (int)Math.ceil((stealthDuration / 1000.0) * 20.0);
 
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, duration, 1));
+        removeArrows();
 
         beginLocation = player.getLocation().clone().add(player.getLocation().getDirection());
 
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
 
         this.start();
+    }
+
+    private void removeArrows() {
+        if (getHandle == null || getDataWatcher == null || setData == null) {
+            Class<?> CraftEntity = null, Entity = null, DataWatcher = null;
+            Class<?> DataWatcherObject = null, DataWatcherSerializer = null, DataWatcherRegistry = null;
+
+            if (mcVersion == 0) {
+                mcVersion = Integer.parseInt(ReflectionHandler.PackageType.getServerVersion().split("_")[1]);
+            }
+
+            CraftEntity = getNMSClass("org.bukkit.craftbukkit.%s.entity.CraftEntity");
+            Entity = getNMSClass("net.minecraft.server.%s.Entity");
+            DataWatcher = getNMSClass("net.minecraft.server.%s.DataWatcher");
+            DataWatcherObject = getNMSClass("net.minecraft.server.%s.DataWatcherObject");
+            DataWatcherSerializer = getNMSClass("net.minecraft.server.%s.DataWatcherSerializer");
+            DataWatcherRegistry = getNMSClass("net.minecraft.server.%s.DataWatcherRegistry");
+
+            if (CraftEntity == null || Entity == null || DataWatcher == null
+                    || DataWatcherObject == null || DataWatcherSerializer == null || DataWatcherRegistry == null)
+            {
+                return;
+            }
+
+            try {
+                getHandle = CraftEntity.getDeclaredMethod("getHandle");
+                getDataWatcher = Entity.getDeclaredMethod("getDataWatcher");
+
+                IntegerSerializer = DataWatcherRegistry.getField("b");
+
+                setData = DataWatcher.getDeclaredMethod("set", DataWatcherObject.asSubclass(Object.class), Object.class);
+
+                DataWatcherObjectConstructor = DataWatcherObject.getConstructor(int.class, DataWatcherSerializer.asSubclass(Object.class));
+            } catch (NoSuchMethodException|NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
+
+        try {
+            Object entity = getHandle.invoke(player);
+            Object dataWatcher = getDataWatcher.invoke(entity);
+
+            Object intSerializer = IntegerSerializer.get(null);
+
+            int metaIndex = 9;
+            if (mcVersion > 9) {
+                metaIndex = 10;
+            }
+            Object watcherObject = DataWatcherObjectConstructor.newInstance(metaIndex, intSerializer);
+
+            setData.invoke(dataWatcher, watcherObject, 0);
+        } catch (IllegalAccessException|InvocationTargetException|InstantiationException e) {
+            e.printStackTrace();
+        }
     }
 
     private boolean inEntityVisibilityCone(LivingEntity entity) {
@@ -288,6 +352,27 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
                 // Check the old config name
                 visionRange = this.config.getDouble("Abilities.Chi.Ambush.NearbyRange", DEFAULT_VISION_RANGE);
             }
+        }
+    }
+
+    private static Class<?> getNMSClass(String nmsClass) {
+        String version = null;
+
+        Pattern pattern = Pattern.compile("net\\.minecraft\\.(?:server)?\\.(v(?:\\d+_)+R\\d)");
+        for (Package p : Package.getPackages()) {
+            String name = p.getName();
+            Matcher m = pattern.matcher(name);
+            if (m.matches()) {
+                version = m.group(1);
+            }
+        }
+
+        if (version == null) return null;
+
+        try {
+            return Class.forName(String.format(nmsClass, version));
+        } catch (ClassNotFoundException e) {
+            return null;
         }
     }
 }
