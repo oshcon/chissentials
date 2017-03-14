@@ -5,10 +5,10 @@ Abilities:
       # Cooldown in milliseconds.
       Cooldown: 16000
       # Number of blocks per second.
-      Description: "FlyingKick."
+      Description: "Left click to start flying through the air in a locked direction. Left click again to stop the movement and do an area attack when hitting the ground."
       Speed: 20.0
       # Maximum amount of time the movement state can last.
-      Duration: 2000
+      Duration: 1500
       # How large the explosion at the end of the movement state is.
       # It should be pretty small because the particles are rendered in 3 waves.
       ExplosionRadius: 3.5
@@ -64,6 +64,9 @@ Abilities:
       VisionAngle: 70.0
       # The number of combo points to generate when a stealth attack is successful.
       ComboPointsGenerated: 0
+      # Set to true to always completely hide the player from nearby players while ambushed.
+      # Stealthed players normally are only completely hidden while not sprinting.
+      HideSprintParticles: false
     DeadlyPunch:
       Enabled: false
       # Cooldown in milliseconds.

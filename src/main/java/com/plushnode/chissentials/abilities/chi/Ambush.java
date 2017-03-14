@@ -40,6 +40,8 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static Field IntegerSerializer = null;
     private static int mcVersion = 0;
 
+    private static final double SOUND_RANGE = 7;
+
     private static final long DEFAULT_COOLDOWN = 25000;
     private static final double DEFAULT_DAMAGE = 5.0;
     private static final int DEFAULT_COMBO_GEN = 0;
@@ -54,6 +56,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static long stealthDuration = DEFAULT_STEALTH_DURATION;
     private static double visionRange = DEFAULT_VISION_RANGE;
     private static double visionAngle = DEFAULT_VISION_ANGLE;
+    private static boolean hideSprintParticles = false;
 
     private boolean removeNextTick = false;
     private Location beginLocation;
@@ -194,6 +197,25 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             vanishParticlesDisplayed = true;
         }
 
+        Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), 100, 100, 100);
+        for (Entity entity : entities) {
+            if (entity instanceof Player) {
+                Player p = (Player) entity;
+
+                if (!hideSprintParticles && player.isSprinting()) {
+                    p.showPlayer(player);
+                } else {
+                    double distanceSq = p.getLocation().distanceSquared(player.getLocation());
+
+                    if (distanceSq <= SOUND_RANGE * SOUND_RANGE) {
+                        p.showPlayer(player);
+                    } else {
+                        p.hidePlayer(player);
+                    }
+                }
+            }
+        }
+
         if (time > getStartTime() + stealthDuration || removeNextTick) {
             remove();
         }
@@ -273,6 +295,10 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         EntityDamageEvent.getHandlerList().unregister(this);
         AbilityStartEvent.getHandlerList().unregister(this);
 
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            p.showPlayer(player);
+        }
+
         super.remove();
     }
 
@@ -347,6 +373,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             stealthDuration = this.config.getLong("Abilities.Chi.Ambush.StealthDuration", DEFAULT_STEALTH_DURATION);
             visionRange = this.config.getDouble("Abilities.Chi.Ambush.VisionRange", DEFAULT_VISION_RANGE);
             visionAngle = this.config.getDouble("Abilities.Chi.Ambush.VisionAngle", DEFAULT_VISION_ANGLE);
+            hideSprintParticles = this.config.getBoolean("Abilities.Chi.Ambush.HideSprintParticles", false);
 
             if (visionRange == DEFAULT_VISION_RANGE) {
                 // Check the old config name
