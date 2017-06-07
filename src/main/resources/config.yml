@@ -64,8 +64,12 @@ Abilities:
       VisionAngle: 70.0
       # The number of combo points to generate when a stealth attack is successful.
       ComboPointsGenerated: 0
+      # Set to true to enable particle hiding.
+      # Setting this to false will override HideSprintParticles.
+      HideParticles: false
       # Set to true to always completely hide the player from nearby players while ambushed.
       # Stealthed players normally are only completely hidden while not sprinting.
+      # HideParticles must be set to true.
       HideSprintParticles: false
     DeadlyPunch:
       Enabled: false

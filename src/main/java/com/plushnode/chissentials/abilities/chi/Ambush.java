@@ -57,6 +57,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
     private static double visionRange = DEFAULT_VISION_RANGE;
     private static double visionAngle = DEFAULT_VISION_ANGLE;
     private static boolean hideSprintParticles = false;
+    private static boolean hideWalkParticles = false;
 
     private boolean removeNextTick = false;
     private Location beginLocation;
@@ -202,7 +203,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             if (entity instanceof Player) {
                 Player p = (Player) entity;
 
-                if (!hideSprintParticles && player.isSprinting()) {
+                if (!hideWalkParticles || (!hideSprintParticles && player.isSprinting())) {
                     p.showPlayer(player);
                 } else {
                     double distanceSq = p.getLocation().distanceSquared(player.getLocation());
@@ -374,6 +375,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
             visionRange = this.config.getDouble("Abilities.Chi.Ambush.VisionRange", DEFAULT_VISION_RANGE);
             visionAngle = this.config.getDouble("Abilities.Chi.Ambush.VisionAngle", DEFAULT_VISION_ANGLE);
             hideSprintParticles = this.config.getBoolean("Abilities.Chi.Ambush.HideSprintParticles", false);
+            hideWalkParticles = this.config.getBoolean("Abilities.Chi.Ambush.HideParticles", false);
 
             if (visionRange == DEFAULT_VISION_RANGE) {
                 // Check the old config name

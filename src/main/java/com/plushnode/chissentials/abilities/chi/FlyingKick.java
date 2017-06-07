@@ -3,9 +3,11 @@ package com.plushnode.chissentials.abilities.chi;
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
+import com.projectkorra.projectkorra.ability.Ability;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.ability.ElementalAbility;
+import com.projectkorra.projectkorra.event.AbilityDamageEntityEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
@@ -125,7 +127,18 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
                     if (!(entity instanceof LivingEntity)) continue;
 
                     if (entity.getLocation().distanceSquared(this.explosionLocation) <= realRadius * realRadius) {
+                        boolean wasBlocked = bPlayer.isChiBlocked();
+
+                        // Block own chi before doing damage so abilities aren't activated from the aoe damage.
+                        if (!wasBlocked) {
+                            bPlayer.blockChi();
+                        }
+
                         DamageHandler.damageEntity(entity, damage, this);
+
+                        if (!wasBlocked) {
+                            bPlayer.unblockChi();
+                        }
                     }
                 }
             }
