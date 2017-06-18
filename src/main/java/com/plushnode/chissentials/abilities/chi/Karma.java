@@ -90,7 +90,7 @@ public class Karma extends ChiAbility implements AddonAbility, Listener {
             lastDisplay = time;
         }
 
-        if (time >= this.startTime + duration) {
+        if (time >= this.getStartTime() + duration) {
             remove();
         }
     }

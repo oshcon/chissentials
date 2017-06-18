@@ -1,7 +1,7 @@
 apply plugin: 'idea'
 apply plugin: 'java'
 
-version = '1.7.6'
+version = '1.8.0'
 
 compileJava {
 	sourceCompatibility = '1.8'
@@ -47,8 +47,8 @@ configurations {
 }
 
 dependencies {
-	provided name: 'spigot-api-1.10-R0.1-SNAPSHOT'
-	provided name: 'ProjectKorra-1.8.1'
+	provided name: 'spigot-api-1.12-R0.1-SNAPSHOT'
+	provided name: 'ProjectKorra-1.8.4'
 }
 
 buildDir = 'bin'
