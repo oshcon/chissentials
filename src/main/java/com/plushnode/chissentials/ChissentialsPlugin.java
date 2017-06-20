@@ -1,6 +1,7 @@
 package com.plushnode.chissentials;
 
 import com.plushnode.chissentials.abilities.chi.*;
+import com.plushnode.chissentials.abilities.chi.passives.Precision;
 import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.listeners.BendingListener;
 import com.plushnode.chissentials.listeners.EntityListener;
@@ -41,6 +42,8 @@ public class ChissentialsPlugin extends JavaPlugin {
         new Ambush.Config(this);
         new DeadlyPunch.Config(this);
         new Lunge.Config(this);
+
+        Precision.createPassiveTask();
 
         // Register after loading the config so enabled will be set correctly
         registerAbilities();

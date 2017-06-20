@@ -2,7 +2,6 @@ package com.plushnode.chissentials.listeners;
 
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.abilities.chi.*;
-import com.plushnode.chissentials.abilities.chi.passives.Precision;
 import com.plushnode.chissentials.ability.SwingDamageAbility;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
@@ -28,8 +27,6 @@ public class EntityListener implements Listener {
 
         BendingPlayer bendingPlayer = BendingPlayer.getBendingPlayer(event.getPlayer());
         if (bendingPlayer == null) return;
-
-        new Precision(event.getPlayer());
 
         CoreAbility boundAbility = bendingPlayer.getBoundAbility();
         if (boundAbility == null) return;

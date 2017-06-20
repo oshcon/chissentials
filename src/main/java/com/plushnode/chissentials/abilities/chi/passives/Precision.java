@@ -10,22 +10,35 @@ import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
+import com.projectkorra.projectkorra.chiblocking.combo.Immobilize;
 import com.projectkorra.projectkorra.util.ParticleEffect;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+
+import java.lang.reflect.Constructor;
+import java.util.*;
+
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class Precision extends ChiAbility implements AddonAbility, Listener {
     private Map<Player, List<PrecisionSpot.PrecisionArea>> areas = new HashMap<>();
+    private static Constructor<?> immobilizeConstructor = null;
+
+    static {
+        try {
+            Class<?> clazz = Class.forName("com.projectkorra.projectkorra.chiblocking.ChiCombo");
+            immobilizeConstructor = clazz.getConstructor(Player.class, String.class);
+        } catch (Exception e) {
+
+        }
+    }
 
     public Precision(Player player) {
         super(player);
@@ -40,19 +53,40 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public void progress() {
-        if (player.isDead() || !player.isOnline()) {
+        if (player.isDead() || !player.isOnline() || !bPlayer.canBendIgnoreBindsCooldowns(this)) {
             remove();
             return;
         }
 
-        for (Map.Entry<Player, List<PrecisionSpot.PrecisionArea>> entry : this.areas.entrySet()) {
+        List<Player> visualList = Collections.singletonList(this.player);
+        Vector up = new Vector(0, 1, 0);
+
+        Iterator<Map.Entry<Player, List<PrecisionArea>>> iterator;
+
+        for (iterator = this.areas.entrySet().iterator(); iterator.hasNext();) {
+            Map.Entry<Player, List<PrecisionSpot.PrecisionArea>> entry = iterator.next();
             Player target = entry.getKey();
 
-            for (PrecisionSpot.PrecisionArea area : entry.getValue()) {
-                PrecisionSpot spot = PrecisionSpot.getPrecisionSpot(target, area);
+            if (target.isDead() || !target.isOnline() || target.getGameMode() != GameMode.SURVIVAL) {
+                iterator.remove();
+                continue;
+            }
 
+            for (PrecisionSpot.PrecisionArea area : entry.getValue()) {
                 Vector toPlayer = this.player.getLocation().toVector().subtract(target.getLocation().toVector()).normalize();
-                ParticleEffect.CRIT.display(spot.getBounds().mid().add(toPlayer.clone().multiply(1.0D)).toLocation(target.getWorld()), 0.0F, 0.0F, 0.0F, 0.0F, 1);
+
+                Vector targetPos = target.getLocation().toVector();
+                Vector visualBase = targetPos.clone().add(toPlayer);
+                Vector front = player.getLocation().getDirection();
+
+                boolean inFront = toPlayer.dot(target.getLocation().getDirection()) > 0;
+                Vector right = (inFront ? front.crossProduct(up).multiply(-1.0) : front.crossProduct(up)).normalize();
+
+                // Create the precision spot for the current player then display it near the target so it's always aligned.
+                PrecisionSpot playerSpot = PrecisionSpot.getPrecisionSpot(this.player, area, up, right);
+                Vector mid = playerSpot.getBounds().mid().subtract(this.player.getLocation().toVector());
+
+                ParticleEffect.CRIT.display(0.0F, 0.0F, 0.0F, 0.0F, 1, visualBase.clone().add(mid).toLocation(player.getWorld()), visualList);
             }
         }
     }
@@ -102,16 +136,21 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
         if (closest != null) {
             List<PrecisionArea> targetAreas = getAreas(target);
             if (!targetAreas.contains(closest.getArea())) {
-                System.out.println("Hit precision spot");
                 targetAreas.add(closest.getArea());
             }
 
             if (targetAreas.size() >= 4) {
-                target.setNoDamageTicks(0);
-                target.damage(6.0D);
                 targetAreas.clear();
 
-                player.sendMessage("All areas hit");
+                if (immobilizeConstructor != null) {
+                    try {
+                        immobilizeConstructor.newInstance(player, "Immobilize");
+                    } catch (Exception e) {
+
+                    }
+                } else {
+                    new Immobilize(player);
+                }
             }
         }
     }
@@ -152,6 +191,11 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
     }
 
     @Override
+    public boolean isHiddenAbility() {
+        return true;
+    }
+
+    @Override
     public long getCooldown() {
         return 0L;
     }
@@ -186,5 +230,25 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
     public String getVersion()
     {
         return ChissentialsPlugin.version;
+    }
+
+    // Handle Precision passive here since ProjectKorra doesn't work correctly with addon passives.
+    public static void createPassiveTask() {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                for (Player player : Bukkit.getOnlinePlayers()) {
+                    if (player.isDead() || player.getGameMode() == GameMode.SPECTATOR) continue;
+
+                    BendingPlayer bPlayer = BendingPlayer.getBendingPlayer(player);
+
+                    if (bPlayer != null && bPlayer.hasElement(Element.CHI) && !CoreAbility.hasAbility(player, Precision.class)) {
+                        if (bPlayer.canBendIgnoreBindsCooldowns(CoreAbility.getAbility("Precision"))) {
+                            new Precision(player);
+                        }
+                    }
+                }
+            }
+        }.runTaskTimer(ChissentialsPlugin.plugin, 20, 20);
     }
 }

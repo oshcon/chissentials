@@ -71,7 +71,7 @@ public class PrecisionSpot {
                 position = location.toVector().add(shoulderHeight).add(right.clone().multiply(-0.3));
                 break;
             default:
-                return null;
+                position = new Vector(0, 0, 0);
         }
 
         return new PrecisionSpot(PrecisionSpot.BASE_BOUNDS.at(position), area);
