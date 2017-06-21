@@ -53,7 +53,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
 
     @Override
     public void progress() {
-        if (player.isDead() || !player.isOnline() || !bPlayer.canBendIgnoreBindsCooldowns(this)) {
+        if (player.isDead() || !player.isOnline()) {
             remove();
             return;
         }
@@ -102,7 +102,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
         Entity damagerEntity = event.getDamager();
         Entity targetEntity = event.getEntity();
 
-        if (!(damagerEntity instanceof Player)) return;
+        if (damagerEntity != this.player) return;
         if (!(targetEntity instanceof Player)) return;
 
         Player damager = (Player)damagerEntity;
@@ -112,6 +112,9 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
         if (bPlayer == null || !bPlayer.hasElement(Element.CHI)) {
             return;
         }
+
+        if (!bPlayer.canBendIgnoreBindsCooldowns(this)) return;
+        if (bPlayer.isOnCooldown("Immobilize")) return;
 
         Ray ray = new Ray(damager.getEyeLocation().toVector(), damager.getEyeLocation().getDirection());
 
@@ -133,6 +136,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
                 }
             }
         }
+
         if (closest != null) {
             List<PrecisionArea> targetAreas = getAreas(target);
             if (!targetAreas.contains(closest.getArea())) {
@@ -173,9 +177,12 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
     }
 
     private List<PrecisionSpot.PrecisionArea> getAreas(Player player) {
-        List<PrecisionSpot.PrecisionArea> playerAreas = this.areas.getOrDefault(player, new ArrayList<>());
+        List<PrecisionSpot.PrecisionArea> playerAreas = this.areas.get(player);
 
-        this.areas.put(player, playerAreas);
+        if (playerAreas == null) {
+            playerAreas = new ArrayList<>();
+            this.areas.put(player, playerAreas);
+        }
 
         return playerAreas;
     }

@@ -13,7 +13,7 @@ public class PrecisionSpot {
         ShoulderRight
     }
 
-    private static final double BOUNDS_WIDTH = 0.25;
+    private static final double BOUNDS_WIDTH = 0.3;
     private static final double HALF_BOUNDS_WIDTH = BOUNDS_WIDTH / 2;
     public static final AABB BASE_BOUNDS = new AABB(
             new Vector(-HALF_BOUNDS_WIDTH, -HALF_BOUNDS_WIDTH, -HALF_BOUNDS_WIDTH),
