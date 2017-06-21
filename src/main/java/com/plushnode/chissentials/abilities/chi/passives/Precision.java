@@ -99,6 +99,8 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
+        if (event.isCancelled()) return;
+        
         Entity damagerEntity = event.getDamager();
         Entity targetEntity = event.getEntity();
 
