@@ -3,17 +3,17 @@ package com.plushnode.chissentials.abilities.chi.passives;
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.PrecisionSpot;
 import com.plushnode.chissentials.PrecisionSpot.PrecisionArea;
+import com.plushnode.chissentials.StunManager;
 import com.plushnode.chissentials.collision.AABB;
 import com.plushnode.chissentials.collision.Ray;
+import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.Element;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
 import com.projectkorra.projectkorra.ability.CoreAbility;
-import com.projectkorra.projectkorra.chiblocking.combo.Immobilize;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 import org.bukkit.Bukkit;
@@ -28,17 +28,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class Precision extends ChiAbility implements AddonAbility, Listener {
+    private static final long DEFAULT_DURATION = 2000L;
+    private static final long DEFAULT_COOLDOWN = 10000L;
+
+    private static boolean enabled = true;
+    private static long duration = DEFAULT_DURATION;
+    private static long cooldown = DEFAULT_COOLDOWN;
+
     private Map<Player, List<PrecisionSpot.PrecisionArea>> areas = new HashMap<>();
-    private static Constructor<?> immobilizeConstructor = null;
-
-    static {
-        try {
-            Class<?> clazz = Class.forName("com.projectkorra.projectkorra.chiblocking.ChiCombo");
-            immobilizeConstructor = clazz.getConstructor(Player.class, String.class);
-        } catch (Exception e) {
-
-        }
-    }
 
     public Precision(Player player) {
         super(player);
@@ -83,7 +80,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
                 Vector right = (inFront ? front.crossProduct(up).multiply(-1.0) : front.crossProduct(up)).normalize();
 
                 // Create the precision spot for the current player then display it near the target so it's always aligned.
-                PrecisionSpot playerSpot = PrecisionSpot.getPrecisionSpot(this.player, area, up, right);
+                PrecisionSpot playerSpot = PrecisionSpot.getPrecisionSpot(this.player.getLocation(), target.isSneaking(), area, up, right);
                 Vector mid = playerSpot.getBounds().mid().subtract(this.player.getLocation().toVector());
 
                 ParticleEffect.CRIT.display(0.0F, 0.0F, 0.0F, 0.0F, 1, visualBase.clone().add(mid).toLocation(player.getWorld()), visualList);
@@ -100,7 +97,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
-        
+
         Entity damagerEntity = event.getDamager();
         Entity targetEntity = event.getEntity();
 
@@ -116,7 +113,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
         }
 
         if (!bPlayer.canBendIgnoreBindsCooldowns(this)) return;
-        if (bPlayer.isOnCooldown("Immobilize")) return;
+        if (bPlayer.isOnCooldown(this)) return;
 
         Ray ray = new Ray(damager.getEyeLocation().toVector(), damager.getEyeLocation().getDirection());
 
@@ -148,15 +145,8 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
             if (targetAreas.size() >= 4) {
                 targetAreas.clear();
 
-                if (immobilizeConstructor != null) {
-                    try {
-                        immobilizeConstructor.newInstance(player, "Immobilize");
-                    } catch (Exception e) {
-
-                    }
-                } else {
-                    new Immobilize(player);
-                }
+                StunManager.get().stun(target, duration);
+                bPlayer.addCooldown(this);
             }
         }
     }
@@ -170,10 +160,12 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
         Vector up = new Vector(0, 1, 0);
         Vector right = front.crossProduct(up).normalize();
 
-        spots.add(PrecisionSpot.getPrecisionSpot(player, PrecisionSpot.PrecisionArea.KneeLeft, up, right));
-        spots.add(PrecisionSpot.getPrecisionSpot(player, PrecisionSpot.PrecisionArea.KneeRight, up, right));
-        spots.add(PrecisionSpot.getPrecisionSpot(player, PrecisionSpot.PrecisionArea.ShoulderLeft, up, right));
-        spots.add(PrecisionSpot.getPrecisionSpot(player, PrecisionSpot.PrecisionArea.ShoulderRight, up, right));
+        boolean sneaking = player.isSneaking();
+
+        spots.add(PrecisionSpot.getPrecisionSpot(location, sneaking, PrecisionSpot.PrecisionArea.KneeLeft, up, right));
+        spots.add(PrecisionSpot.getPrecisionSpot(location, sneaking, PrecisionSpot.PrecisionArea.KneeRight, up, right));
+        spots.add(PrecisionSpot.getPrecisionSpot(location, sneaking, PrecisionSpot.PrecisionArea.ShoulderLeft, up, right));
+        spots.add(PrecisionSpot.getPrecisionSpot(location, sneaking, PrecisionSpot.PrecisionArea.ShoulderRight, up, right));
 
         return spots;
     }
@@ -205,8 +197,13 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public long getCooldown() {
-        return 0L;
+        return cooldown;
     }
 
     @Override
@@ -259,5 +256,20 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
                 }
             }
         }.runTaskTimer(ChissentialsPlugin.plugin, 20, 20);
+    }
+
+    public static class Config extends Configurable {
+        public Config(ChissentialsPlugin plugin) {
+            super(plugin);
+
+            onConfigReload();
+        }
+
+        @Override
+        public void onConfigReload() {
+            enabled = this.config.getBoolean("Abilities.Chi.Precision.Enabled", true);
+            cooldown = this.config.getLong("Abilities.Chi.Precision.Cooldown", DEFAULT_COOLDOWN);
+            duration = this.config.getLong("Abilities.Chi.Precision.Duration", DEFAULT_DURATION);
+        }
     }
 }

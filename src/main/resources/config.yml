@@ -92,3 +92,9 @@ Abilities:
       # How many milliseconds it takes to cycle through all the colors in a rainbow lunge.
       # Enable rainbow Lunge with Chissentials.Lunge.Rainbow permission.
       RainbowCycleDuration: 600
+    Precision:
+      Enabled: true
+      # Cooldown in milliseconds. Starts after applying a stun.
+      Cooldown: 10000
+      # How long the stun lasts
+      Duration: 2000

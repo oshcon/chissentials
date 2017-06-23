@@ -8,7 +8,10 @@ import com.plushnode.chissentials.listeners.EntityListener;
 import com.plushnode.chissentials.listeners.StunListener;
 import com.projectkorra.projectkorra.ability.CoreAbility;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
+import java.lang.reflect.Method;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ChissentialsPlugin extends JavaPlugin {
@@ -42,6 +45,7 @@ public class ChissentialsPlugin extends JavaPlugin {
         new Ambush.Config(this);
         new DeadlyPunch.Config(this);
         new Lunge.Config(this);
+        new Precision.Config(this);
 
         Precision.createPassiveTask();
 
@@ -52,6 +56,25 @@ public class ChissentialsPlugin extends JavaPlugin {
     public void registerAbilities() {
         logger.info("Registering Chissentials abilities with ProjectKorra.");
         CoreAbility.registerPluginAbilities(this, "com.plushnode.chissentials.abilities");
+
+        // Add a fake combo to JedCore combos list so Precision appears as a cooldown.
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try {
+                    Class<?> JCMethods = Class.forName("com.jedk1.jedcore.JCMethods");
+
+                    Method getCombos = JCMethods.getMethod("getCombos");
+                    List<String> combos = (List<String>)getCombos.invoke(null);
+
+                    if (combos != null) {
+                        combos.add("Precision");
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }.runTaskLater(this, 20);
     }
 
     @Override

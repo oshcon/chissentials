@@ -39,36 +39,32 @@ public class PrecisionSpot {
         return this.bounds;
     }
 
-    public static PrecisionSpot getPrecisionSpot(Player player, PrecisionArea area) {
-        Location location = player.getLocation();
-        Vector front = location.getDirection();
+    public static PrecisionSpot getPrecisionSpot(Location location, boolean sneaking, PrecisionArea area, Vector up, Vector right) {
+        double shoulderHeight = 1.25;
+        double kneeHeight = 0.5;
 
-        Vector up = new Vector(0, 1, 0);
-        Vector right = front.crossProduct(up).normalize();
+        if (sneaking) {
+            shoulderHeight -= 0.1;
+            kneeHeight -= 0.05;
+        }
 
-        return getPrecisionSpot(player, area, up, right);
-    }
-
-    public static PrecisionSpot getPrecisionSpot(Player player, PrecisionArea area, Vector up, Vector right) {
-        Location location = player.getLocation();
-
-        Vector kneeHeight = up.clone().multiply(0.5);
-        Vector shoulderHeight = up.clone().multiply(1.25);
+        Vector kneeVertOffset = up.clone().multiply(kneeHeight);
+        Vector shoulderVertOffset = up.clone().multiply(shoulderHeight);
 
         Vector position;
 
         switch (area) {
             case KneeRight:
-                position = location.toVector().add(kneeHeight).add(right.clone().multiply(0.2));
+                position = location.toVector().add(kneeVertOffset).add(right.clone().multiply(0.2));
                 break;
             case KneeLeft:
-                position = location.toVector().add(kneeHeight).add(right.clone().multiply(-0.2));
+                position = location.toVector().add(kneeVertOffset).add(right.clone().multiply(-0.2));
                 break;
             case ShoulderRight:
-                position = location.toVector().add(shoulderHeight).add(right.clone().multiply(0.3));
+                position = location.toVector().add(shoulderVertOffset).add(right.clone().multiply(0.3));
                 break;
             case ShoulderLeft:
-                position = location.toVector().add(shoulderHeight).add(right.clone().multiply(-0.3));
+                position = location.toVector().add(shoulderVertOffset).add(right.clone().multiply(-0.3));
                 break;
             default:
                 position = new Vector(0, 0, 0);
