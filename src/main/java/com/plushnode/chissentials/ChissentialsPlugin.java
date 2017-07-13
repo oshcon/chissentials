@@ -57,24 +57,28 @@ public class ChissentialsPlugin extends JavaPlugin {
         logger.info("Registering Chissentials abilities with ProjectKorra.");
         CoreAbility.registerPluginAbilities(this, "com.plushnode.chissentials.abilities");
 
-        // Add a fake combo to JedCore combos list so Precision appears as a cooldown.
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                try {
-                    Class<?> JCMethods = Class.forName("com.jedk1.jedcore.JCMethods");
+        boolean addCombo = getConfig().getBoolean("Abilities.Chi.Precision.JedCoreCombo");
 
-                    Method getCombos = JCMethods.getMethod("getCombos");
-                    List<String> combos = (List<String>)getCombos.invoke(null);
+        if (addCombo) {
+            // Add a fake combo to JedCore combos list so Precision appears as a cooldown.
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    try {
+                        Class<?> JCMethods = Class.forName("com.jedk1.jedcore.JCMethods");
 
-                    if (combos != null) {
-                        combos.add("Precision");
+                        Method getCombos = JCMethods.getMethod("getCombos");
+                        List<String> combos = (List<String>) getCombos.invoke(null);
+
+                        if (combos != null) {
+                            combos.add("Precision");
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-        }.runTaskLater(this, 20);
+            }.runTaskLater(this, 20);
+        }
     }
 
     @Override

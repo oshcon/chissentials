@@ -93,8 +93,10 @@ Abilities:
       # Enable rainbow Lunge with Chissentials.Lunge.Rainbow permission.
       RainbowCycleDuration: 600
     Precision:
-      Enabled: true
+      Enabled: false
       # Cooldown in milliseconds. Starts after applying a stun.
       Cooldown: 10000
-      # How long the stun lasts
+      # How long the stun lasts in milliseconds.
       Duration: 2000
+      # Adds Precision cooldown to JedCore combo list.
+      JedCoreCombo: false

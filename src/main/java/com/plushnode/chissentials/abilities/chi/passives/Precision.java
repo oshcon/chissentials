@@ -267,7 +267,7 @@ public class Precision extends ChiAbility implements AddonAbility, Listener {
 
         @Override
         public void onConfigReload() {
-            enabled = this.config.getBoolean("Abilities.Chi.Precision.Enabled", true);
+            enabled = this.config.getBoolean("Abilities.Chi.Precision.Enabled", false);
             cooldown = this.config.getLong("Abilities.Chi.Precision.Cooldown", DEFAULT_COOLDOWN);
             duration = this.config.getLong("Abilities.Chi.Precision.Duration", DEFAULT_DURATION);
         }

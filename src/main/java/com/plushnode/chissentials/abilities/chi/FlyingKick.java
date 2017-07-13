@@ -3,16 +3,12 @@ package com.plushnode.chissentials.abilities.chi;
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.config.Configurable;
 import com.projectkorra.projectkorra.BendingPlayer;
-import com.projectkorra.projectkorra.ability.Ability;
 import com.projectkorra.projectkorra.ability.AddonAbility;
 import com.projectkorra.projectkorra.ability.ChiAbility;
-import com.projectkorra.projectkorra.ability.ElementalAbility;
-import com.projectkorra.projectkorra.event.AbilityDamageEntityEvent;
 import com.projectkorra.projectkorra.util.ActionBar;
 import com.projectkorra.projectkorra.util.DamageHandler;
 import com.projectkorra.projectkorra.util.ParticleEffect;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -74,7 +70,7 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         vehicle.setGravity(true);
         vehicle.getLocation().setDirection(player.getLocation().getDirection());
         vehicle.setMarker(true);
-        vehicle.setPassenger(player);
+        vehicle.addPassenger(player);
 
         this.direction = player.getLocation().getDirection().clone().setY(0).normalize();
         this.startY = player.getLocation().getBlockY();
@@ -162,7 +158,11 @@ public class FlyingKick extends ChiAbility implements AddonAbility, Listener {
         
         if (state == State.Init) {
             transitionState(State.Movement);
+            // Flip visbility to try to fix server metadata bug.
+            vehicle.setVisible(true);
         }
+
+        vehicle.setVisible(false);
 
         switch (state) {
             case Movement:

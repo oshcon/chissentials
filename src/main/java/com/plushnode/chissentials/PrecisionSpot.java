@@ -2,7 +2,6 @@ package com.plushnode.chissentials;
 
 import com.plushnode.chissentials.collision.AABB;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 
 public class PrecisionSpot {
@@ -13,7 +12,7 @@ public class PrecisionSpot {
         ShoulderRight
     }
 
-    private static final double BOUNDS_WIDTH = 0.3;
+    private static final double BOUNDS_WIDTH = 0.35;
     private static final double HALF_BOUNDS_WIDTH = BOUNDS_WIDTH / 2;
     public static final AABB BASE_BOUNDS = new AABB(
             new Vector(-HALF_BOUNDS_WIDTH, -HALF_BOUNDS_WIDTH, -HALF_BOUNDS_WIDTH),

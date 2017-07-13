@@ -3,6 +3,7 @@ package com.plushnode.chissentials.abilities.chi;
 import com.plushnode.chissentials.ChissentialsPlugin;
 import com.plushnode.chissentials.combopoint.ComboPointManager;
 import com.plushnode.chissentials.config.Configurable;
+import com.plushnode.chissentials.util.ArrowUtil;
 import com.projectkorra.projectkorra.BendingPlayer;
 import com.projectkorra.projectkorra.GeneralMethods;
 import com.projectkorra.projectkorra.ability.AddonAbility;
@@ -11,7 +12,6 @@ import com.projectkorra.projectkorra.ability.CoreAbility;
 import com.projectkorra.projectkorra.event.AbilityStartEvent;
 import com.projectkorra.projectkorra.event.EntityBendingDeathEvent;
 import com.projectkorra.projectkorra.util.ParticleEffect;
-import com.projectkorra.projectkorra.util.ReflectionHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -27,19 +27,16 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerAnimationEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.*;
+import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.List;
+import java.util.Random;
 
 public class Ambush extends ChiAbility implements AddonAbility, Listener {
-    private static Method getHandle = null, getDataWatcher = null, setData = null;
-    private static Constructor<?> DataWatcherObjectConstructor = null;
-    private static Field IntegerSerializer = null;
-    private static int mcVersion = 0;
-
     private static final double SOUND_RANGE = 7;
 
     private static final long DEFAULT_COOLDOWN = 25000;
@@ -61,7 +58,7 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
 
     private boolean removeNextTick = false;
     private Location beginLocation;
-    private boolean vanishParticlesDisplayed = false;
+    private ParticleRenderer renderer;
 
     public Ambush(Player player) {
         super(player);
@@ -77,66 +74,49 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         int duration = (int)Math.ceil((stealthDuration / 1000.0) * 20.0);
 
         player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, duration, 1));
-        removeArrows();
 
-        beginLocation = player.getLocation().clone().add(player.getLocation().getDirection());
+        ArrowUtil.clear(player);
+
+        beginLocation = player.getLocation().clone();
 
         ChissentialsPlugin.plugin.getServer().getPluginManager().registerEvents(this, ChissentialsPlugin.plugin);
+
+        if (player.hasPermission("Chissentials.Ambush.Rainbow")) {
+            this.renderer = new RainbowRenderer();
+        } else {
+            this.renderer = new SmokeRenderer();
+        }
 
         this.start();
     }
 
-    private void removeArrows() {
-        if (getHandle == null || getDataWatcher == null || setData == null) {
-            Class<?> CraftEntity = null, Entity = null, DataWatcher = null;
-            Class<?> DataWatcherObject = null, DataWatcherSerializer = null, DataWatcherRegistry = null;
+    @Override
+    public void progress() {
+        long time = System.currentTimeMillis();
 
-            if (mcVersion == 0) {
-                mcVersion = Integer.parseInt(ReflectionHandler.PackageType.getServerVersion().split("_")[1]);
-            }
+        renderer.render();
 
-            CraftEntity = getNMSClass("org.bukkit.craftbukkit.%s.entity.CraftEntity");
-            Entity = getNMSClass("net.minecraft.server.%s.Entity");
-            DataWatcher = getNMSClass("net.minecraft.server.%s.DataWatcher");
-            DataWatcherObject = getNMSClass("net.minecraft.server.%s.DataWatcherObject");
-            DataWatcherSerializer = getNMSClass("net.minecraft.server.%s.DataWatcherSerializer");
-            DataWatcherRegistry = getNMSClass("net.minecraft.server.%s.DataWatcherRegistry");
+        Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), 100, 100, 100);
+        for (Entity entity : entities) {
+            if (entity instanceof Player) {
+                Player p = (Player) entity;
 
-            if (CraftEntity == null || Entity == null || DataWatcher == null
-                    || DataWatcherObject == null || DataWatcherSerializer == null || DataWatcherRegistry == null)
-            {
-                return;
-            }
+                if (!hideWalkParticles || (!hideSprintParticles && player.isSprinting())) {
+                    p.showPlayer(player);
+                } else {
+                    double distanceSq = p.getLocation().distanceSquared(player.getLocation());
 
-            try {
-                getHandle = CraftEntity.getDeclaredMethod("getHandle");
-                getDataWatcher = Entity.getDeclaredMethod("getDataWatcher");
-
-                IntegerSerializer = DataWatcherRegistry.getField("b");
-
-                setData = DataWatcher.getDeclaredMethod("set", DataWatcherObject.asSubclass(Object.class), Object.class);
-
-                DataWatcherObjectConstructor = DataWatcherObject.getConstructor(int.class, DataWatcherSerializer.asSubclass(Object.class));
-            } catch (NoSuchMethodException|NoSuchFieldException e) {
-                e.printStackTrace();
+                    if (distanceSq <= SOUND_RANGE * SOUND_RANGE) {
+                        p.showPlayer(player);
+                    } else {
+                        p.hidePlayer(player);
+                    }
+                }
             }
         }
 
-        try {
-            Object entity = getHandle.invoke(player);
-            Object dataWatcher = getDataWatcher.invoke(entity);
-
-            Object intSerializer = IntegerSerializer.get(null);
-
-            int metaIndex = 9;
-            if (mcVersion > 9) {
-                metaIndex = 10;
-            }
-            Object watcherObject = DataWatcherObjectConstructor.newInstance(metaIndex, intSerializer);
-
-            setData.invoke(dataWatcher, watcherObject, 0);
-        } catch (IllegalAccessException|InvocationTargetException|InstantiationException e) {
-            e.printStackTrace();
+        if (time > getStartTime() + stealthDuration || removeNextTick) {
+            remove();
         }
     }
 
@@ -183,43 +163,6 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         }
 
         return false;
-    }
-
-    @Override
-    public void progress() {
-        long time = System.currentTimeMillis();
-
-        if (!vanishParticlesDisplayed) {
-            // Render vertical part of smoke
-            ParticleEffect.SMOKE_LARGE.display(0.5f, 1.0f, 0.5f, 0.0f, 60, beginLocation.clone().add(0, 1, 0), ChissentialsPlugin.PARTICLE_RANGE);
-            // Render wide bottom part of smoke
-            ParticleEffect.SMOKE_LARGE.display(1.0f, 0.5f, 1.0f, 0.0f, 120, beginLocation, ChissentialsPlugin.PARTICLE_RANGE);
-
-            vanishParticlesDisplayed = true;
-        }
-
-        Collection<Entity> entities = player.getWorld().getNearbyEntities(player.getLocation(), 100, 100, 100);
-        for (Entity entity : entities) {
-            if (entity instanceof Player) {
-                Player p = (Player) entity;
-
-                if (!hideWalkParticles || (!hideSprintParticles && player.isSprinting())) {
-                    p.showPlayer(player);
-                } else {
-                    double distanceSq = p.getLocation().distanceSquared(player.getLocation());
-
-                    if (distanceSq <= SOUND_RANGE * SOUND_RANGE) {
-                        p.showPlayer(player);
-                    } else {
-                        p.hidePlayer(player);
-                    }
-                }
-            }
-        }
-
-        if (time > getStartTime() + stealthDuration || removeNextTick) {
-            remove();
-        }
     }
 
     @EventHandler (priority = EventPriority.LOW)
@@ -299,6 +242,18 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.showPlayer(player);
         }
+
+        final boolean wasSprinting = player.isSprinting();
+
+        // There's a bug introduced in 1.11 that doesn't properly synchronize metadata with clients.
+        // Flip sprinting to try to update metadata.
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                player.setSprinting(!wasSprinting);
+                player.setSprinting(wasSprinting);
+            }
+        }.runTaskLater(ChissentialsPlugin.plugin, 1);
 
         super.remove();
     }
@@ -384,24 +339,80 @@ public class Ambush extends ChiAbility implements AddonAbility, Listener {
         }
     }
 
-    private static Class<?> getNMSClass(String nmsClass) {
-        String version = null;
+    private interface ParticleRenderer {
+        void render();
+    }
 
-        Pattern pattern = Pattern.compile("net\\.minecraft\\.(?:server)?\\.(v(?:\\d+_)+R\\d)");
-        for (Package p : Package.getPackages()) {
-            String name = p.getName();
-            Matcher m = pattern.matcher(name);
-            if (m.matches()) {
-                version = m.group(1);
+    private class SmokeRenderer implements ParticleRenderer {
+        private boolean displayed = false;
+
+        @Override
+        public void render() {
+            if (!displayed) {
+                // Render vertical part of smoke
+                ParticleEffect.SMOKE_LARGE.display(0.5f, 1.0f, 0.5f, 0.0f, 60, beginLocation.clone().add(0, 1, 0), ChissentialsPlugin.PARTICLE_RANGE);
+                // Render wide bottom part of smoke
+                ParticleEffect.SMOKE_LARGE.display(1.0f, 0.5f, 1.0f, 0.0f, 120, beginLocation, ChissentialsPlugin.PARTICLE_RANGE);
+
+                displayed = true;
+            }
+        }
+    }
+
+    private class RainbowRenderer implements ParticleRenderer {
+        private int vanishParticlesDisplayed = 0;
+        private long lastParticleTime = 0;
+        private List<RainbowParticle> rainbowParticles = new ArrayList<>();
+
+        @Override
+        public void render() {
+            long time = System.currentTimeMillis();
+
+            if (time >= lastParticleTime + 100 && vanishParticlesDisplayed < 3) {
+                if (rainbowParticles.isEmpty()) {
+                    // Render top part
+                    renderRandomRainbow(beginLocation.clone().add(0, 1.5, 0), 1.0f, 2.0f, 1.0f, 120);
+                    // Render bottom part
+                    renderRandomRainbow(beginLocation.clone().add(0, 0.5, 0), 2.5f, 0.75f, 2.5f, 240);
+                }
+
+                for (RainbowParticle particle : rainbowParticles) {
+                    Location particleLocation = particle.location;
+                    Color color = particle.color;
+
+                    ParticleEffect.REDSTONE.display(color.getRed(), color.getGreen(), color.getBlue(), 0.005f, 0, particleLocation, ChissentialsPlugin.PARTICLE_RANGE);
+                }
+
+                ++vanishParticlesDisplayed;
+                lastParticleTime = time;
             }
         }
 
-        if (version == null) return null;
+        private void renderRandomRainbow(Location location, float xSpread, float ySpread, float zSpread, int count) {
+            Random r = new Random();
 
-        try {
-            return Class.forName(String.format(nmsClass, version));
-        } catch (ClassNotFoundException e) {
-            return null;
+            for (int i = 0; i < count; ++i) {
+                int rgb = Color.HSBtoRGB(r.nextFloat(), 0.75f, 0.75f);
+                Color color = new Color(rgb);
+
+                Location particleLocation = location.clone().add(randomBinomial(r) * xSpread, randomBinomial(r) * ySpread, randomBinomial(r) * zSpread);
+
+                rainbowParticles.add(new RainbowParticle(particleLocation, color));
+            }
+        }
+
+        private float randomBinomial(Random random) {
+            return random.nextFloat() - random.nextFloat();
+        }
+    }
+
+    private static class RainbowParticle {
+        Location location;
+        Color color;
+
+        RainbowParticle(Location location, Color color) {
+            this.location = location;
+            this.color = color;
         }
     }
 }
